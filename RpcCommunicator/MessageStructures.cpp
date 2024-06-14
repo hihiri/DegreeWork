@@ -3,7 +3,7 @@
 using namespace std;
 
 enum CommandType {
-
+	Test = 0
 };
 
 struct MessageDataStructureBase {
