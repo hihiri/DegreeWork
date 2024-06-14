@@ -1,0 +1,4 @@
+TPC/IP conncetion implementation in c++.
+JsonRPC protocol for debug purposes.
+
+Implement it by hand or have a library for it?
