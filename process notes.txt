@@ -1,0 +1,3 @@
+JSonRpc protocol specification:
+https://www.jsonrpc.org/specification
+TODO: find the rfc that I read first
