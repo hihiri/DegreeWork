@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{f6adb4c8-414c-4eee-9b73-2e482cbdca44}</ProjectGuid>
-    <RootNamespace>RpcCommunicator</RootNamespace>
+    <ProjectGuid>{490fd183-33e6-403c-a16c-b4a42f84339f}</ProjectGuid>
+    <RootNamespace>RpcCommunicatorTests</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -70,6 +70,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\oem user\Documents\GitHub\CppUnit\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\oem user\Documents\GitHub\CppUnit\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -104,10 +108,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\oem user\Documents\GitHub\DegreeWork</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>cppunitd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -127,12 +133,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="RpcCommunicator.cpp" />
-    <ClCompile Include="RpcHandler.cpp" />
+    <ClCompile Include="MessageStructuresTest.cpp" />
+    <ClCompile Include="UnitTestKernel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MessageStructures.cpp" />
-    <ClInclude Include="RpcHandler.hpp" />
+    <ProjectReference Include="..\RpcCommunicator\RpcCommunicator.vcxproj">
+      <Project>{f6adb4c8-414c-4eee-9b73-2e482cbdca44}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
