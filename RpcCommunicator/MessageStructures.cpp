@@ -1,22 +1,39 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
-enum CommandType {
-	Test = 0
-};
-
-struct MessageDataStructureBase {
-	MessageDataStructureBase(CommandType type) {
-		Type = type;
+struct Attribute {
+	Attribute(string key, string value) {
+		Key = key;
+		Value = value;
 	}
 
-	CommandType Type;
+	string Key;
+	string Value;
 };
 
-struct TestMessage : MessageDataStructureBase {
-	TestMessage(CommandType type, string message) : MessageDataStructureBase(type){
+class MessageDataStructureBase {
+public:
+	MessageDataStructureBase(string type) {
+		Type = type;
+	};
+
+	virtual vector<Attribute*> toVector() { 
+		return {};
+	};
+
+	string Type;
+};
+
+class TestMessage : public MessageDataStructureBase {
+public:
+	TestMessage(string type, string message) : MessageDataStructureBase(type){
 		MessageContent = message;
+	}
+
+	vector<Attribute*> toVector() {
+		return { new Attribute("Type", Type),new Attribute("MessageContent", MessageContent)};
 	}
 
 	string MessageContent;

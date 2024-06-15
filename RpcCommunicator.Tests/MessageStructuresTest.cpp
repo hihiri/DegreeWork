@@ -8,7 +8,7 @@ class MessageStructuresTest : public CppUnit::TestFixture {
 	TestMessage* t;
 public:
 	void setUp() {
-		t = new TestMessage(Test, "test");
+		t = new TestMessage("test", "test");
 	}
 
 	void tearDown() {
@@ -16,7 +16,7 @@ public:
 	}
 
 	void testAttributes() {
-		CPPUNIT_ASSERT(t->Type == 0);
+		CPPUNIT_ASSERT(t->Type == "test");
 		CPPUNIT_ASSERT(t->MessageContent == "test");
 	}
 

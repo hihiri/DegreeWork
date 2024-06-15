@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "MessageStructures.cpp"
+#include <vector>
 
 using namespace std;
 
@@ -11,11 +12,10 @@ class RpcHandler {
 	string Method;
 	string Params;
 
-	string SerializeData(MessageDataStructureBase);
-	MessageDataStructureBase DeserializeData(string);
 	string Wrap();
 	void UnWrap(string);
-
+	void SerializeParameters(vector<Attribute*>);
+	vector<Attribute*> DeserializeParameters();
 public:
 	string Serialize(MessageDataStructureBase);
 	MessageDataStructureBase Deserialize(string);
