@@ -61,13 +61,13 @@ int main() {
     }
 
     //receiving messages
-    // char receiveBuffer[200];
-    // int byteCount = recv(acceptSocket, receiveBuffer, 200, 0);
-    // if(byteCount < 0){
-    //     cout << "Server recv error: " << WSAGetLastError() << endl;
-    //     return 0;
-    // } else {
-    //     cout << "Received data: " << receiveBuffer << endl;
-    // }
+     char receiveBuffer[200];
+     int byteCount = recv(clientSocket, receiveBuffer, 200, 0);
+     if(byteCount < 0){
+         cout << "Server recv error: " << WSAGetLastError() << endl;
+         return 0;
+     } else {
+         cout << "Received data: " << receiveBuffer << endl;
+     }
 
 }
