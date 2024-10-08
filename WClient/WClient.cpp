@@ -1,5 +1,4 @@
-//refer ClientCreation for more info
-
+#pragma comment(lib, "Ws2_32.lib")
 #include <iostream>
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -36,7 +35,7 @@ int main() {
     //connection to server
     sockaddr_in clientService;
     clientService.sin_family = AF_INET;
-    clientService.sin_addr.s_addr = inet_addr("127.0.0.1");
+    inet_pton(AF_INET, "127.0.0.1", &clientService.sin_addr.s_addr);
     clientService.sin_port = htons(55555);
     if (connect(clientSocket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR) {
         cout << "Client: connect() - Failed to connect: " << WSAGetLastError() << endl;

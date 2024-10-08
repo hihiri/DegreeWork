@@ -1,5 +1,4 @@
-//Refer ServerCreation.md for detail infos
-
+#pragma comment(lib, "Ws2_32.lib")
 #include <iostream>
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -46,7 +45,7 @@ int main() {
     service.sin_family = AF_INET;
     //InetPton(AF_INET, _T("127.0.0.1"), &service.sin_addr.s_addr); 
     //InetPton function is encountering an issue, so replaced with the following line which uses inet_addr to convert IP address string to the binary form (only for ipv4) and storing it
-    service.sin_addr.s_addr = inet_addr("127.0.0.1");
+    inet_pton(AF_INET, "127.0.0.1", &service.sin_addr.s_addr);
     //    service.sin_addr.s_addr = inet_addr("192.168.43.42");
     service.sin_port = htons(55555);
     //using the bind function
