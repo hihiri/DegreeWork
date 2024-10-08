@@ -131,7 +131,7 @@
     <ClCompile Include="RpcHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MessageStructures.cpp" />
+    <ClInclude Include="MessageStructures.hpp" />
     <ClInclude Include="RpcHandler.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
