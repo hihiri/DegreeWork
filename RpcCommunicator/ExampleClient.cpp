@@ -1,84 +1,67 @@
-
+#include <arpa/inet.h> // inet_addr()
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include<arpa/inet.h>
-#include<sys/socket.h>
-
-#define PORT 5001   //The port on which to listen for incoming data
-#define SERVER "192.168.1.10"
+#include <strings.h> // bzero()
+#include <sys/socket.h>
+#include <unistd.h> // read(), write(), close()
+#define MAX 80
+#define PORT 8080
+#define SA struct sockaddr
+void func(int sockfd)
+{
+    char buff[MAX];
+    int n;
+    for (;;) {
+        bzero(buff, sizeof(buff));
+        printf("Enter the string : ");
+        n = 0;
+        while ((buff[n++] = getchar()) != '\n')
+            ;
+        write(sockfd, buff, sizeof(buff));
+        bzero(buff, sizeof(buff));
+        read(sockfd, buff, sizeof(buff));
+        printf("From Server : %s", buff);
+        if ((strncmp(buff, "exit", 4)) == 0) {
+            printf("Client Exit...\n");
+            break;
+        }
+    }
+}
 
 int main()
 {
-    struct sockaddr_in si_me, si_other;
-    int s;
+    int sockfd, connfd;
+    struct sockaddr_in servaddr, cli;
 
-    //int buff_size=2048;
-    //int buff_size=64*1024;
-    int buff_size = 128 * 1024 * 1024;
-    int array_size = buff_size / sizeof(int);
-
-    int* buff_int = malloc(buff_size);
-    int* recv_buff_int = malloc(buff_size);
-    char* buff, * recv_buff;
-
-    int i, n;
-    int bytes_left;
-
-    int max_transfers = 16;
-    int curr_tr;
-
-    //create a TCP socket
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    // zero out the structure
-    memset((char*)&si_me, 0, sizeof(si_me));
-    si_me.sin_family = AF_INET;
-    si_me.sin_port = htons(PORT);
-    si_me.sin_addr.s_addr = htonl(INADDR_ANY);
-    memset((char*)&si_other, 0, sizeof(si_other));
-    si_other.sin_family = AF_INET;
-    si_other.sin_port = htons(PORT);
-    inet_aton(SERVER, &si_other.sin_addr);
-    //bind socket to port
-    connect(s, (struct sockaddr*)&si_other, sizeof(si_other));
-    for (i = 0; i < array_size; i++)
-    {
-        buff_int[i] = i;
+    // socket create and verification
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1) {
+        printf("socket creation failed...\n");
+        exit(0);
     }
-    //start send
-    printf("Sending %d bytes\n", buff_size);
-    for (curr_tr = 0; curr_tr < max_transfers; curr_tr++)
-    {
-        bytes_left = buff_size;
-        buff = (char*)buff_int;
-        while (bytes_left > 0)
-        {
-            n = send(s, buff, bytes_left, 0);
-            bytes_left -= n;
-            buff += n;
-            printf("Sent bytes: %d, remaining bytes: %d\n", n, bytes_left);
-        }
-    }
-    //start receive
-    for (curr_tr = 0; curr_tr < max_transfers; curr_tr++)
-    {
-        bytes_left = buff_size;
-        recv_buff = (char*)recv_buff_int;
-        while (bytes_left > 0)
-        {
+    else
+        printf("Socket successfully created..\n");
+    bzero(&servaddr, sizeof(servaddr));
 
-            n = recv(s, recv_buff, bytes_left, 0);
-            bytes_left -= n;
-            recv_buff += n;
-            //printf("Received bytes: %d, remaining bytes: %d\n",n,bytes_left);
-        }
+    // assign IP, PORT
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servaddr.sin_port = htons(PORT);
+
+    // connect the client socket to server socket
+    if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr))
+        != 0) {
+        printf("connection with the server failed...\n");
+        exit(0);
     }
-    /*   for(i=0; i<array_size; i++)
-       {
-           //if (i == 0 || i==array_size-1)
-           {
-               printf("buff[%d] %d, recv_buff[%d] %d\n",i,buff_int[i],i,recv_buff_int[i]);
-           }
-       }*/
-    return 0;
+    else
+        printf("connected to the server..\n");
+
+    // function for chat
+    func(sockfd);
+
+    // close the socket
+    close(sockfd);
 }
