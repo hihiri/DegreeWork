@@ -2,23 +2,23 @@
 #define RPCHANDLER_HPP
 
 #include <iostream>
-#include "MessageStructures.cpp"
+
+#include "MessageStructures.hpp"
+#include <vector>
 
 using namespace std;
 
 class RpcHandler {
 	int Id = 0;
 	string Method;
-	string Params;
+	vector<param*> Params;
 
-	string SerializeData(MessageDataStructureBase);
-	MessageDataStructureBase DeserializeData(string);
-	string Wrap();
+	string Wrap(string);
 	void UnWrap(string);
-
+	string SerializeParameters(vector<param*>);
 public:
-	string Serialize(MessageDataStructureBase);
-	MessageDataStructureBase Deserialize(string);
+	string Serialize(TestMessage);
+	TestMessage Deserialize(string);
 };
 
 #endif
