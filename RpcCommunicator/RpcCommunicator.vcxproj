@@ -127,6 +127,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ExampleClient.cpp" />
+    <ClCompile Include="ExampleServer.cpp" />
     <ClCompile Include="RpcCommunicator.cpp" />
     <ClCompile Include="RpcHandler.cpp" />
   </ItemGroup>
