@@ -3,6 +3,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <tchar.h>
+#include "RpcHandler.hpp"
+
 using namespace std;
 
 int main() {
@@ -90,6 +92,10 @@ int main() {
     else {
         cout << "Received data: " << receiveBuffer << endl;
     }
+
+    auto k = new RpcHandler();
+    auto result = k->Deserialize(receiveBuffer);
+    delete k;
 
     //6. (b)  sending data
     char buffer[200];

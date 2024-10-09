@@ -2,6 +2,8 @@
 #include <iostream>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include "RpcHandler.hpp"
+
 using namespace std;
 
 int main() {
@@ -48,10 +50,11 @@ int main() {
     }
 
     //sending data
-    char buffer[200];
     printf("Enter the message: ");
-    cin.getline(buffer, 200);
-    int sbyteCount = send(clientSocket, buffer, 200, 0);
+
+    auto rpcHandler = new RpcHandler();
+
+    int sbyteCount = send(clientSocket, rpcHandler->Serialize(*new TestMessage("test", "6789123456")).c_str(), 200, 0);
     if (sbyteCount == SOCKET_ERROR) {
         cout << "Server send error: " << WSAGetLastError() << endl;
         return -1;
@@ -69,5 +72,4 @@ int main() {
      } else {
          cout << "Received data: " << receiveBuffer << endl;
      }
-
 }
