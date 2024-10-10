@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\oem user\Documents\GitHub\DegreeWork\RpcCommunicator</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\oem user\Documents\GitHub\DegreeWork\Common</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

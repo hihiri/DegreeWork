@@ -4,6 +4,7 @@
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{adeb629b-932a-42ee-b01c-39d0c84a1658}</ItemsProjectGuid>
+    <ItemsProjectName>Common</ItemsProjectName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -14,7 +15,8 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\RpcCommunicator\MessageStructures.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\RpcCommunicator\RpcHandler.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MessageStructures.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NetworkHandler.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RpcHandler.hpp" />
   </ItemGroup>
 </Project>

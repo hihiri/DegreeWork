@@ -124,7 +124,7 @@ class RpcHandler {
 
 	void UnWrap(string input) {
 		vector<param*> envelope = FindStructure(input);
-		Method = toMethodType(stripStringValue(FindFirst(declareMethod, envelope)));
+		Method = toMethodType(FindFirst(declareMethod, envelope));
 		Id = atoi(FindFirst(declareId, envelope).c_str());
 		Params = FindStructure(FindFirst(declareParams, envelope));
 	}
