@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WClient", "..\WClient\WClie
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WServer", "..\WServer\WServer.vcxproj", "{2CE67F97-A311-45FF-8D1C-2C9115BD7ED4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RpcHandler", "..\RpcHandler\RpcHandler.vcxitems", "{ADEB629B-932A-42EE-B01C-39D0C84A1658}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "..\Common\Common.vcxitems", "{ADEB629B-932A-42EE-B01C-39D0C84A1658}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
