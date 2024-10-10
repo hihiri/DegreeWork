@@ -6,12 +6,12 @@ using namespace std;
 
 int main() {    
 
-    ServerNetworkHandler* networkHandler = new ServerNetworkHandler();
+    auto networkHandler = new ServerNetworkHandler();
 
     RpcHandler* rpcHandler = new RpcHandler();
-    Message result = rpcHandler->Deserialize(networkHandler->WaitReceiving());
+    Message result = rpcHandler->Deserialize(networkHandler->WaitReceive());
 
-    networkHandler->Send({ });
+    networkHandler->Send(rpcHandler->Serialize(result));
     
     return 0;
 }

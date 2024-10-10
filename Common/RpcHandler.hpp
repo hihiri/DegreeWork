@@ -143,9 +143,9 @@ class RpcHandler {
 	}
 
 public:
-	string Serialize(Message data) {
+	const char* Serialize(Message data) {
 		Method = data.Method;
-		return Wrap(SerializeParameters(data.toVector()));
+		return Wrap(SerializeParameters(data.toVector())).c_str();
 	}
 
 	Message Deserialize(string input) {

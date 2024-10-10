@@ -5,14 +5,13 @@ using namespace std;
 
 int main() {
     
-    ClientNetworkHandler* networkHandler = new ClientNetworkHandler();
-    
+    auto networkHandler = new ClientNetworkHandler();    
 
     RpcHandler* rpcHandler = new RpcHandler();
 
-    networkHandler->Send(rpcHandler->Serialize(*new LoadParamsMessage("6789123456")).c_str());
+    networkHandler->Send(rpcHandler->Serialize(*new LoadParamsMessage("6789123456")));
 
     //receiving messages
-    rpcHandler->Deserialize(networkHandler->WaitReceiving());
+    rpcHandler->Deserialize(networkHandler->WaitReceive());
     return 0;
 }

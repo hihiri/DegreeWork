@@ -40,13 +40,34 @@ protected:
         }
     }
 
+    char* BaseWaitReceive(SOCKET _socket) {
+        char receiveBuffer[200];
+        int byteCount = recv(_socket, receiveBuffer, 200, 0);
+        if (byteCount < 0) {
+            cout << "Server recv error: " << WSAGetLastError() << endl;
+            return 0;
+        }
+        else {
+            cout << "Received data: " << receiveBuffer << endl;
+        }
+    }
+
+    void BaseSend(const char* message, SOCKET _socket) {
+        int sbyteCount = send(_socket, message, 200, 0);
+        if (sbyteCount == SOCKET_ERROR) {
+            throw "Server send error: " + WSAGetLastError();
+        }
+        else {
+            cout << "Server: sent" << sbyteCount << endl;
+        }
+    }
 public:
     NetworkHandlerBase() {
         InitWSA();
         InitSocket();        
     }
 
-    virtual char* WaitReceiving() = 0;
+    virtual char* WaitReceive() = 0;
     virtual void Send(const char*) = 0;
 };
 
@@ -97,31 +118,12 @@ public:
         Accept();
     }
 
-    char* WaitReceiving() override {
-        char receiveBuffer[200];
-        int rbyteCount = recv(AcceptSocket, receiveBuffer, 200, 0);
-        if (rbyteCount < 0) {
-            cout << "Server recv error: " << WSAGetLastError() << endl;
-            return 0;
-        }
-        else {
-            cout << "Received data: " << receiveBuffer << endl;
-        }
-
-        return receiveBuffer;
+    char* WaitReceive() override {
+        return BaseWaitReceive(AcceptSocket);
     }
 
     void Send(const char* message) override {
-        char buffer[200];
-        printf("Enter the message: ");
-        cin.getline(buffer, 200);
-        int sbyteCount = send(AcceptSocket, buffer, 200, 0);
-        if (sbyteCount == SOCKET_ERROR) {
-            throw "Server send error: " + WSAGetLastError();
-        }
-        else {
-            cout << "Server: sent" << sbyteCount << endl;
-        }
+        BaseSend(message, AcceptSocket);
     }
 };
 
@@ -144,25 +146,11 @@ public:
     }
 
     void Send(const char* message) override {
-        int sbyteCount = send(mySocket, message, 200, 0);
-        if (sbyteCount == SOCKET_ERROR) {
-            throw "Server send error: " + WSAGetLastError();
-        }
-        else {
-            cout << "Server: sent" << sbyteCount << endl;
-        }
+        BaseSend(message, mySocket);
     }
 
-    char* WaitReceiving() override {
-        char receiveBuffer[200];
-        int byteCount = recv(mySocket, receiveBuffer, 200, 0);
-        if (byteCount < 0) {
-            cout << "Server recv error: " << WSAGetLastError() << endl;
-            return 0;
-        }
-        else {
-            cout << "Received data: " << receiveBuffer << endl;
-        }
+    char* WaitReceive() override {
+        return BaseWaitReceive(mySocket);
     }
 };
 #endif
