@@ -124,7 +124,7 @@ class RpcHandler {
 
 	void UnWrap(string input) {
 		vector<param*> envelope = FindStructure(input);
-		Method = toMethodType(stripStringValue(FindFirst(declareMethod, envelope)));
+		Method = toMethodType(FindFirst(declareMethod, envelope));
 		Id = atoi(FindFirst(declareId, envelope).c_str());
 		Params = FindStructure(FindFirst(declareParams, envelope));
 	}
@@ -143,9 +143,9 @@ class RpcHandler {
 	}
 
 public:
-	const char* Serialize(Message data) {
+	string Serialize(Message data) {
 		Method = data.Method;
-		return Wrap(SerializeParameters(data.toVector())).c_str();
+		return Wrap(SerializeParameters(data.toVector()));
 	}
 
 	Message Deserialize(string input) {

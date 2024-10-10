@@ -9,9 +9,11 @@ int main() {
     auto networkHandler = new ServerNetworkHandler();
 
     RpcHandler* rpcHandler = new RpcHandler();
-    Message result = rpcHandler->Deserialize(networkHandler->WaitReceive());
 
-    networkHandler->Send(rpcHandler->Serialize(result));
+    string message = networkHandler->WaitReceive();
+    Message result = rpcHandler->Deserialize(message);
+
+    networkHandler->Send(rpcHandler->Serialize(result).c_str());
     
     return 0;
 }

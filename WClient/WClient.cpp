@@ -9,9 +9,12 @@ int main() {
 
     RpcHandler* rpcHandler = new RpcHandler();
 
-    networkHandler->Send(rpcHandler->Serialize(*new LoadParamsMessage("6789123456")));
+    networkHandler->Send(rpcHandler->Serialize(*new Message(startCalculation)).c_str());
 
     //receiving messages
     rpcHandler->Deserialize(networkHandler->WaitReceive());
+
+    string s;
+    cin >> s;
     return 0;
 }

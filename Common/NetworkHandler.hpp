@@ -40,15 +40,16 @@ protected:
         }
     }
 
-    char* BaseWaitReceive(SOCKET _socket) {
+    string BaseWaitReceive(SOCKET _socket) {
         char receiveBuffer[200];
         int byteCount = recv(_socket, receiveBuffer, 200, 0);
         if (byteCount < 0) {
-            cout << "Server recv error: " << WSAGetLastError() << endl;
-            return 0;
+            throw "Server recv error: " + WSAGetLastError();
         }
         else {
             cout << "Received data: " << receiveBuffer << endl;
+            string s = receiveBuffer;
+            return s;
         }
     }
 
@@ -67,7 +68,7 @@ public:
         InitSocket();        
     }
 
-    virtual char* WaitReceive() = 0;
+    virtual string WaitReceive() = 0;
     virtual void Send(const char*) = 0;
 };
 
@@ -118,7 +119,7 @@ public:
         Accept();
     }
 
-    char* WaitReceive() override {
+    string WaitReceive() override {
         return BaseWaitReceive(AcceptSocket);
     }
 
@@ -149,7 +150,7 @@ public:
         BaseSend(message, mySocket);
     }
 
-    char* WaitReceive() override {
+    string WaitReceive() override {
         return BaseWaitReceive(mySocket);
     }
 };
