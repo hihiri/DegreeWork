@@ -143,15 +143,15 @@ class RpcHandler {
 	}
 
 public:
-	string Serialize(MessageDataStructureBase data) {
+	string Serialize(Message data) {
 		Method = data.Method;
 		return Wrap(SerializeParameters(data.toVector()));
 	}
 
-	TestMessage Deserialize(string input) {
+	LoadParamsMessage Deserialize(string input) {
 		UnWrap(input);
 		switch (Method) {
-			case test: return *(new TestMessage(FindFirst("MessageContent", Params)));
+			case loadParams: return *(new LoadParamsMessage(FindFirst("MessageContent", Params)));
 		};			
 	}
 };
