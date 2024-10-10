@@ -18,11 +18,11 @@ formatErr = "Bad format!";
 
 class RpcHandler {
 	int Id = 0;
-	string Method;
+	MethodType Method;
 	vector<param*> Params;
 
 	string Wrap(string serializedParams) {
-		return "{\"" + declareRpcVersion + "\":\"" + RpcVersion + "\",\"" + declareMethod + "\":\"" + Method + "\",\"" + declareParams + "\":" + serializedParams + ",\"" + declareId + "\":" + to_string(Id) + "}";
+		return "{\"" + declareRpcVersion + "\":\"" + RpcVersion + "\",\"" + declareMethod + "\":\"" + toString(Method) + "\",\"" + declareParams + "\":" + serializedParams + ",\"" + declareId + "\":" + to_string(Id) + "}";
 	}
 
 	string FindFirst(string key, vector<param*> v) {
@@ -42,8 +42,8 @@ class RpcHandler {
 		vector<param*> result = {};
 		int state = 0;//tells wich index we are looking for
 		int* indexes = new int[4]; // looking for 4 indexes: param name start / end, value start / end
-		int iterationnumber = input.length();
-		for (int i = 0; i < iterationnumber; i++) {
+		int iterationNumber = input.length();
+		for (int i = 0; i < iterationNumber; i++) {
 			switch (state) {
 			case 0:
 				if (input[i] == '"') {
@@ -124,7 +124,7 @@ class RpcHandler {
 
 	void UnWrap(string input) {
 		vector<param*> envelope = FindStructure(input);
-		Method = stripStringValue(FindFirst(declareMethod, envelope));
+		Method = toMethodType(stripStringValue(FindFirst(declareMethod, envelope)));
 		Id = atoi(FindFirst(declareId, envelope).c_str());
 		Params = FindStructure(FindFirst(declareParams, envelope));
 	}
@@ -143,15 +143,17 @@ class RpcHandler {
 	}
 
 public:
-	string Serialize(TestMessage data) {
+	string Serialize(Message data) {
 		Method = data.Method;
 		return Wrap(SerializeParameters(data.toVector()));
 	}
 
-	TestMessage Deserialize(string input) {
+	Message Deserialize(string input) {
 		UnWrap(input);
-		if (Method == "test")
-			return *(new TestMessage(Method, FindFirst("MessageContent", Params)));
+		switch (Method) {
+			case loadParams: return *(new LoadParamsMessage(FindFirst("MessageContent", Params)));
+			default: return *(new Message(Method));
+		};			
 	}
 };
 

@@ -16,24 +16,47 @@ struct param {
 	string Value;
 };
 
-class MessageDataStructureBase {
+enum MethodType {
+	loadParams,
+	startCalculation,
+	getStatus,
+	ENUM_SIZE
+};
+
+static const char* MethodTypeNames[] = { "LoadParameters", "StartCalculation", "GetStatus"};
+
+static_assert(sizeof(MethodTypeNames) / sizeof(char*) == ENUM_SIZE, "type and type name array missmatch");
+
+string toString(MethodType type) {
+	return MethodTypeNames[type];
+}
+
+MethodType toMethodType(string method) {
+	for (unsigned int i = 0; i < ENUM_SIZE; i++) {
+		if (method == MethodTypeNames[i]) {
+			return static_cast<MethodType>(i);
+		}
+	}
+	throw "unkown method type: " + method + "\n";
+}
+
+class Message {
 public:
-	MessageDataStructureBase(string method) {
+	Message(MethodType method) {
 		Method = method;
 	};
 
-	virtual vector<param*> toVector() { 
-		return {};
-	};
+	virtual vector<param*> toVector() {
+		return { };
+	}
 
-	string Method;
+	MethodType Method;
 };
 
-class TestMessage : public MessageDataStructureBase {
+class LoadParamsMessage : public Message {
 public:
-	TestMessage(string method, string message) : MessageDataStructureBase(method){
+	LoadParamsMessage(string message) : Message(loadParams){
 		MessageContent = message;
-		Method;
 	}
 
 	vector<param*> toVector() {

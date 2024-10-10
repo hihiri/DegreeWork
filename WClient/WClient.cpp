@@ -54,7 +54,7 @@ int main() {
 
     auto rpcHandler = new RpcHandler();
 
-    int sbyteCount = send(clientSocket, rpcHandler->Serialize(*new TestMessage("test", "6789123456")).c_str(), 200, 0);
+    int sbyteCount = send(clientSocket, rpcHandler->Serialize(*new LoadParamsMessage("6789123456")).c_str(), 200, 0);
     if (sbyteCount == SOCKET_ERROR) {
         cout << "Server send error: " << WSAGetLastError() << endl;
         return -1;
