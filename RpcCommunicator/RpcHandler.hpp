@@ -148,10 +148,11 @@ public:
 		return Wrap(SerializeParameters(data.toVector()));
 	}
 
-	LoadParamsMessage Deserialize(string input) {
+	Message Deserialize(string input) {
 		UnWrap(input);
 		switch (Method) {
 			case loadParams: return *(new LoadParamsMessage(FindFirst("MessageContent", Params)));
+			default: return *(new Message(Method));
 		};			
 	}
 };
