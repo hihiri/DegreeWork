@@ -17,13 +17,14 @@ struct param {
 };
 
 enum MethodType {
+	response,
 	loadParams,
 	startCalculation,
 	getStatus,
 	ENUM_SIZE
 };
 
-static const char* MethodTypeNames[] = { "LoadParameters", "StartCalculation", "GetStatus"};
+static const char* MethodTypeNames[] = { "Response", "LoadParameters", "StartCalculation", "GetStatus"};
 
 static_assert(sizeof(MethodTypeNames) / sizeof(char*) == ENUM_SIZE, "type and type name array missmatch");
 
@@ -51,6 +52,7 @@ public:
 	}
 
 	MethodType Method;
+	string ResponseMessage;
 };
 
 class LoadParamsMessage : public Message {
@@ -66,4 +68,11 @@ public:
 	string MessageContent;
 };
 
+class Response : public Message {
+public:
+	Response(string message) : Message(response) {
+		Method = response;
+		ResponseMessage = message;
+	}
+};
 #endif
