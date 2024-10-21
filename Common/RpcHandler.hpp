@@ -13,8 +13,10 @@ string RpcVersion = "2.0",
 declareRpcVersion = "jsonrpc",
 declareMethod = "method",
 declareParams = "params",
+declareResponse = "result",
 declareId = "id",
-formatErr = "Bad format!";
+formatErr = "Bad format!",
+noKey = "No suitable key found in vector!";
 
 class RpcHandler {
 	int Id = 0;
@@ -22,14 +24,25 @@ class RpcHandler {
 	vector<param*> Params;
 
 	string Wrap(string serializedParams) {
-		return "{\"" + declareRpcVersion + "\":\"" + RpcVersion + "\",\"" + declareMethod + "\":\"" + toString(Method) + "\",\"" + declareParams + "\":" + serializedParams + ",\"" + declareId + "\":" + to_string(Id) + "}";
+		string methodDeclaration = Method != response ? (declareMethod + "\":\"" + toString(Method) + "\",\"") : "";
+		string resultOrParamDeclaration = Method != response ? declareParams : declareResponse;
+
+		return "{\""
+			+ declareRpcVersion + "\":\""
+			+ RpcVersion + "\",\""
+			+ methodDeclaration
+			+ resultOrParamDeclaration + "\":"
+			+ serializedParams + ",\""
+			+ declareId + "\":"
+			+ to_string(Id)
+			+ "}";
 	}
 
 	string FindFirst(string key, vector<param*> v) {
 		for (param* e : v)
 			if (e->Key == key)
 				return e->Value;
-		throw "No suitable key found in vector!";
+		throw noKey;
 	}
 
 	//apostroph is retained on string values after FindStructure
@@ -124,9 +137,19 @@ class RpcHandler {
 
 	void UnWrap(string input) {
 		vector<param*> envelope = FindStructure(input);
-		Method = toMethodType(FindFirst(declareMethod, envelope));
+		try {
+			Method = toMethodType(FindFirst(declareMethod, envelope));
+			Params = FindStructure(FindFirst(declareParams, envelope));
+		}
+		catch (string ex) {
+			if (ex == noKey) {
+				Method = response;
+				Params[0] = new param(MethodTypeNames[response], FindFirst("result", envelope));
+			}
+			else throw ex;
+		}
 		Id = atoi(FindFirst(declareId, envelope).c_str());
-		Params = FindStructure(FindFirst(declareParams, envelope));
+		
 	}
 
 	string SerializeParameters(vector<param*> attributes) {
@@ -145,13 +168,14 @@ class RpcHandler {
 public:
 	string Serialize(Message data) {
 		Method = data.Method;
-		return Wrap(SerializeParameters(data.toVector()));
+		return Wrap(Method != response ? SerializeParameters(data.toVector()) : data.ResponseMessage);
 	}
 
 	Message Deserialize(string input) {
 		UnWrap(input);
 		switch (Method) {
 			case loadParams: return *(new LoadParamsMessage(FindFirst("MessageContent", Params)));
+			case response: return *(new Response(FindFirst(MethodTypeNames[response], Params)));
 			default: return *(new Message(Method));
 		};			
 	}
