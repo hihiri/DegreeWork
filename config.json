@@ -1,0 +1,9 @@
+{
+  "allowed_message_types": [
+    "GetTaskQue",
+    "QueTask",
+    "RemoveTask",
+    "EmptyQue",
+    "EndCurrentTask"
+  ]
+}
