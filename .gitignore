@@ -11,3 +11,8 @@
 /WServer/.vs/WServer
 /WServer/x64/Debug
 /Deprecated/WClient/.vs/WClient
+/Deprecated/RpcCommunicator/.vs/RpcCommunicator
+/Deprecated/WClient/x64/Debug
+/Deprecated/WServer/x64/Debug
+/Deprecated/RpcCommunicator/x64/Debug
+/Deprecated/RpcCommunicator/.vs/
