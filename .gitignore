@@ -2,14 +2,6 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/RpcCommunicator/.vs/RpcCommunicator
-/RpcCommunicator/x64/Debug
-/RpcCommunicator.Tests/x64/Debug
-/ConsoleApplication1/x64/Debug
-/WClient/x64/Debug
-/WClient/.vs/WClient
-/WServer/.vs/WServer
-/WServer/x64/Debug
 /Deprecated/WClient/.vs/WClient
 /.vs
 /client/log
