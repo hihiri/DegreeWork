@@ -61,7 +61,7 @@ def main():
     cmd = sys.argv[1]
     cfg = read_config()
     HOST = cfg.get('serverIP', '127.0.0.1')
-    PORT = 12345
+    PORT = cfg.get('connectionPort', 12345)
 
     if cmd.startswith('sendData:'):
         # format sendData:filename

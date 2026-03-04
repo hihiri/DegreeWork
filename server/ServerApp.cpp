@@ -44,6 +44,7 @@ static Config readConfig(const std::string &path){
     parse_int_field("\"SizeX\"", c.SizeX);
     parse_int_field("\"SizeY\"", c.SizeY);
     parse_int_field("\"SizeZ\"", c.SizeZ);
+    parse_int_field("\"connectionPort\"", c.connectionPort);
     parse_bool_field("\"log\"", c.log);
     return c;
 }
@@ -60,6 +61,7 @@ static void write_config(const std::string &path, const Config &c){
     write_field("SizeX", std::to_string(c.SizeX), true);
     write_field("SizeY", std::to_string(c.SizeY), true);
     write_field("SizeZ", std::to_string(c.SizeZ), true);
+    write_field("connectionPort", std::to_string(c.connectionPort), true);
     write_field("log", (c.log?"true":"false"), false);
 
     f << "}\n";

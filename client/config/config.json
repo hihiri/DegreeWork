@@ -3,5 +3,6 @@
   "SizeY": 20,
   "SizeZ": 30,
   "log": true,
-  "serverIP": "127.0.0.1"
+  "serverIP": "127.0.0.1",
+  "connectionPort": 12345
 }
