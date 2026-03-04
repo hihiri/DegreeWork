@@ -1,0 +1,7 @@
+{
+  "SizeX": 10,
+  "SizeY": 20,
+  "SizeZ": 30,
+  "log": true,
+  "connectionPort": 12345
+}

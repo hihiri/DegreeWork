@@ -1,0 +1,50 @@
+c++ server and a python client.
+
+Server does not need to support multiple clients.
+They communicate via TPC/IP protocol.
+Both Have a config, and a log.
+
+Both sides have the same config.
+Message trafic is loged on both sides if the corresponding config boolean is true.
+Messages are binary serialized.
+
+ConfigFrmat: JSON
+Config content:
+"SizeX":int
+"SizeY":int
+"SizeZ":int
+"log":boolean
+(server ip is in client config, wont be sent in putConfig)
+
+Messages:
+General message format: dxxxxxxxxxxxxxxxxxxxx where d is a single digit rest are the message content, lenght depends on the message type
+
+SendConfig:
+Client sends the current config content to server. Server on receive logs that it is revceived. Server overwrites the old config with the new one.
+message content: 0xxxyyyzzzb where x y z are always 3 digit each, l is a 0 or 1 depending on config
+
+GetStatus:
+Client sends it to Server.
+Server on receiving sends back the current computation status as Response message, computation status for now is just an internal int default 0
+message content: 1
+response format: 5s where s is the status
+
+SendData:
+Client sends to Server.
+Server on receiving:
+If the status was not 0, sends back error response and does nothing else.
+Otherwise saves the input to local variables. And sends back an ack response.
+message content: 2xxxxxxxxxxxxx where xxxxxx is a placeholder for the actual vaues. For now I just send an integer with value 1995
+error message content: 6
+ack message content: 7
+
+GetResult:
+Client sends to Server.
+Server on receiving:
+If the satus was not "done" sends back error response. (currently for debug purposes status 1 is considered"done")
+Else sends back the result value. (Currently placeholder value is 2026)
+message content: 3
+error response: 8
+response content: 9xxxxxxxxxxxxx where x is placeholder for result value
+
+
