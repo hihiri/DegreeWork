@@ -12,8 +12,7 @@ def main():
 
     cmd = sys.argv[1]
     cfg = logic.readConfig()
-    HOST = cfg.get('serverIP', '127.0.0.1')
-    PORT = cfg.get('port', 12345)
+    logic.initConfig(cfg)
 
     method, sep, rest = cmd.partition(':')
 
@@ -28,7 +27,7 @@ def main():
             with open(filePath,'r') as f:
                 payload = f.read().strip()
 
-            resp = logic.communicate(HOST, PORT, ('2'+payload).encode('ascii'))
+            resp = logic.communicate(('2'+payload).encode('ascii'))
             if resp and resp[0]==ord('7'):
                 print('Server ack for data')
             elif resp and resp[0]==ord('6'):
@@ -38,12 +37,12 @@ def main():
 
         case 'sendConfig':
             msg = logic.formatConfigMessage(cfg)
-            logic.communicate(HOST, PORT, msg)
+            logic.communicate(msg)
             logic.log('Sent config')
             print('Sent config')
 
         case 'getStatus':
-            data = logic.communicate(HOST, PORT, b'1')
+            data = logic.communicate(b'1')
             if data and data[0]==ord('5') and len(data)>=2:
                 status = data[1:2].decode('ascii')
                 print('Status:', status)
@@ -51,7 +50,7 @@ def main():
                 print('Bad status response', data)
 
         case 'getResult':
-            resp = logic.communicate(HOST, PORT, b'3')
+            resp = logic.communicate(b'3')
             if resp and resp[0]==ord('9'):
                 result = resp[1:].decode('ascii')
                 print('Result:', result)

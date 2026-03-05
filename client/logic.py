@@ -9,6 +9,16 @@ logDir = os.path.join(BASE, 'log')
 logPath = os.path.join(logDir, 'client.log')
 dataDir = os.path.join(BASE, 'data')
 
+ip = None
+port = None
+logging = False
+
+def initConfig(cfg):
+    global ip, port, logging
+    ip = cfg.get('serverIP', '127.0.0.1')
+    port = cfg.get('port', 12345)
+    logging = cfg.get('log', False)
+
 def now():
     return time.strftime('%Y-%m-%d %H:%M:%S')
 
@@ -17,27 +27,24 @@ def readConfig():
         return json.load(f)
 
 def log(msg):
-    cfg = readConfig()
     if not os.path.exists(logDir): os.makedirs(logDir)
-    if cfg.get('log', False):
+    if logging:
         with open(logPath,'a') as f:
             f.write(f"{now()} {msg}\n")
 
 def sendMsg(sock, data: bytes):
     sock.sendall(data)
-    cfg = readConfig()
-    if cfg.get('log', False):
+    if logging:
         log('tx: ' + ' '.join(f"{b:02x}" for b in data))
 
 def recvMsg(sock, bufsize=1024):
     data = sock.recv(bufsize)
-    cfg = readConfig()
-    if cfg.get('log', False):
+    if logging:
         log('rx: ' + ' '.join(f"{b:02x}" for b in data))
     return data
 
-def communicate(host, port, message):
-    with socket.create_connection((host, port)) as s:
+def communicate(message):
+    with socket.create_connection((ip, port)) as s:
         sendMsg(s, message)
         return recvMsg(s)
 
