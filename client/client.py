@@ -13,7 +13,7 @@ def main():
     cmd = sys.argv[1]
     cfg = logic.readConfig()
     HOST = cfg.get('serverIP', '127.0.0.1')
-    PORT = cfg.get('connectionPort', 12345)
+    PORT = cfg.get('port', 12345)
 
     method, sep, rest = cmd.partition(':')
 

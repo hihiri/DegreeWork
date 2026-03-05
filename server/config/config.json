@@ -3,5 +3,5 @@
   "SizeY": 20,
   "SizeZ": 30,
   "log": true,
-  "connectionPort": 12345
+  "port": 12345
 }

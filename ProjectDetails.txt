@@ -4,17 +4,19 @@ Server does not need to support multiple clients.
 They communicate via TPC/IP protocol.
 Both Have a config, and a log.
 
-Both sides have the same config.
+Both sides have the same config. (except the server IP not present on the server config)
 Message trafic is loged on both sides if the corresponding config boolean is true.
 Messages are binary serialized.
 
-ConfigFrmat: JSON
+ConfigFormat: JSON
 Config content:
 "SizeX":int
 "SizeY":int
 "SizeZ":int
 "log":boolean
-(server ip is in client config, wont be sent in putConfig)
+"port":int
+
+Server ip is in client config, wont be sent in putConfig
 
 Messages:
 General message format: dxxxxxxxxxxxxxxxxxxxx where d is a single digit rest are the message content, lenght depends on the message type
@@ -41,7 +43,7 @@ ack message content: 7
 GetResult:
 Client sends to Server.
 Server on receiving:
-If the satus was not "done" sends back error response. (currently for debug purposes status 1 is considered"done")
+If the satus was not "done" sends back error response. (currently for debug purposes status 1 is considered "done")
 Else sends back the result value. (Currently placeholder value is 2026)
 message content: 3
 error response: 8

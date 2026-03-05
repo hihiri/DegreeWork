@@ -37,7 +37,6 @@ def recvMsg(sock, bufsize=1024):
     return data
 
 def communicate(host, port, message):
-    """Send a message to the server and return the response."""
     with socket.create_connection((host, port)) as s:
         sendMsg(s, message)
         return recvMsg(s)
