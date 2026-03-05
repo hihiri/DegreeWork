@@ -11,8 +11,7 @@ def main():
         sys.exit(1)
 
     cmd = sys.argv[1]
-    cfg = logic.readConfig()
-    logic.initConfig(cfg)
+    logic.readConfig()
 
     method, sep, rest = cmd.partition(':')
 
@@ -36,7 +35,7 @@ def main():
                 print('Unexpected data response', resp)
 
         case 'sendConfig':
-            msg = logic.formatConfigMessage(cfg)
+            msg = logic.formatConfigMessage()
             logic.communicate(msg)
             logic.log('Sent config')
             print('Sent config')

@@ -12,19 +12,23 @@ dataDir = os.path.join(BASE, 'data')
 ip = None
 port = None
 logging = False
+sizeX = None
+sizeY = None
+sizeZ = None
 
-def initConfig(cfg):
-    global ip, port, logging
+def readConfig():
+    global ip, port, logging, sizeX, sizeY, sizeZ
+    with open(configPath,'r') as f:
+        cfg = json.load(f)
     ip = cfg.get('serverIP', '127.0.0.1')
     port = cfg.get('port', 12345)
     logging = cfg.get('log', False)
+    sizeX = cfg.get('SizeX', 0)
+    sizeY = cfg.get('SizeY', 0)
+    sizeZ = cfg.get('SizeZ', 0)
 
 def now():
     return time.strftime('%Y-%m-%d %H:%M:%S')
-
-def readConfig():
-    with open(configPath,'r') as f:
-        return json.load(f)
 
 def log(msg):
     if not os.path.exists(logDir): os.makedirs(logDir)
@@ -48,11 +52,11 @@ def communicate(message):
         sendMsg(s, message)
         return recvMsg(s)
 
-def formatConfigMessage(cfg):
-    sx = str(cfg['SizeX']).zfill(3)
-    sy = str(cfg['SizeY']).zfill(3)
-    sz = str(cfg['SizeZ']).zfill(3)
-    b = '1' if cfg.get('log',False) else '0'
+def formatConfigMessage():
+    sx = str(sizeX).zfill(3)
+    sy = str(sizeY).zfill(3)
+    sz = str(sizeZ).zfill(3)
+    b = '1' if logging else '0'
     s = '0' + sx + sy + sz + b
     return s.encode('ascii')
 
