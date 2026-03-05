@@ -5,12 +5,6 @@ import time
 import sys
 import helpers
 
-BASE = os.path.dirname(__file__)
-CONFIG_PATH = os.path.join(BASE, 'config', 'config.json')
-LOG_DIR = os.path.join(BASE, 'log')
-LOG_PATH = os.path.join(LOG_DIR, 'client.log')
-DATA_DIR = os.path.join(BASE, 'data')
-
 def main():
     if len(sys.argv) != 2:
         helpers.usage()
