@@ -1,41 +1,48 @@
 import os
 import time
 import json
+import socket
 
 BASE = os.path.dirname(__file__)
-CONFIG_PATH = os.path.join(BASE, 'config', 'config.json')
-LOG_DIR = os.path.join(BASE, 'log')
-LOG_PATH = os.path.join(LOG_DIR, 'client.log')
-DATA_DIR = os.path.join(BASE, 'data')
+configPath = os.path.join(BASE, 'config', 'config.json')
+logDir = os.path.join(BASE, 'log')
+logPath = os.path.join(logDir, 'client.log')
+dataDir = os.path.join(BASE, 'data')
 
 def now():
     return time.strftime('%Y-%m-%d %H:%M:%S')
 
-def read_config():
-    with open(CONFIG_PATH,'r') as f:
+def readConfig():
+    with open(configPath,'r') as f:
         return json.load(f)
 
 def log(msg):
-    cfg = read_config()
-    if not os.path.exists(LOG_DIR): os.makedirs(LOG_DIR)
+    cfg = readConfig()
+    if not os.path.exists(logDir): os.makedirs(logDir)
     if cfg.get('log', False):
-        with open(LOG_PATH,'a') as f:
+        with open(logPath,'a') as f:
             f.write(f"{now()} {msg}\n")
 
-def send_msg(sock, data: bytes):
+def sendMsg(sock, data: bytes):
     sock.sendall(data)
-    cfg = read_config()
+    cfg = readConfig()
     if cfg.get('log', False):
         log('tx: ' + ' '.join(f"{b:02x}" for b in data))
 
-def recv_msg(sock, bufsize=1024):
+def recvMsg(sock, bufsize=1024):
     data = sock.recv(bufsize)
-    cfg = read_config()
+    cfg = readConfig()
     if cfg.get('log', False):
         log('rx: ' + ' '.join(f"{b:02x}" for b in data))
     return data
 
-def format_config_message(cfg):
+def communicate(host, port, message):
+    """Send a message to the server and return the response."""
+    with socket.create_connection((host, port)) as s:
+        sendMsg(s, message)
+        return recvMsg(s)
+
+def formatConfigMessage(cfg):
     sx = str(cfg['SizeX']).zfill(3)
     sy = str(cfg['SizeY']).zfill(3)
     sz = str(cfg['SizeZ']).zfill(3)
