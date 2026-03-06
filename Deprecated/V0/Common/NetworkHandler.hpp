@@ -31,35 +31,39 @@ protected:
         mySocket = INVALID_SOCKET;
         mySocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (mySocket == INVALID_SOCKET) {
-            string err = "Error at socket():" + WSAGetLastError();
+            string err = string("Error at socket():") + to_string(WSAGetLastError());
             WSACleanup();
             throw err + "\n";
         }
         else {
             cout << "socket is OK!" << endl;
         }
+        return mySocket;
     }
 
     string BaseWaitReceive(SOCKET _socket) {
-        char receiveBuffer[200];
+        char receiveBuffer[201];
         int byteCount = recv(_socket, receiveBuffer, 200, 0);
         if (byteCount < 0) {
-            throw "Server recv error: " + WSAGetLastError();
+            throw string("Server recv error: ") + to_string(WSAGetLastError());
         }
         else {
+            // ensure null termination
+            int len = byteCount < 200 ? byteCount : 200;
+            receiveBuffer[len] = '\0';
             cout << "Received data: " << receiveBuffer << endl;
-            string s = receiveBuffer;
-            return s;
+            return string(receiveBuffer);
         }
     }
 
     void BaseSend(const char* message, SOCKET _socket) {
-        int sbyteCount = send(_socket, message, 200, 0);
+        size_t toSend = strlen(message);
+        int sbyteCount = send(_socket, message, static_cast<int>(toSend), 0);
         if (sbyteCount == SOCKET_ERROR) {
-            throw "Server send error: " + WSAGetLastError();
+            throw string("Server send error: ") + to_string(WSAGetLastError());
         }
         else {
-            cout << "Server: sent" << sbyteCount << endl;
+            cout << "Server: sent " << sbyteCount << endl;
         }
     }
 public:

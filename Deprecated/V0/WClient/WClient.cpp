@@ -5,14 +5,16 @@ using namespace std;
 
 int main() {
     
-    auto networkHandler = new ClientNetworkHandler();    
+    ClientNetworkHandler networkHandler;
 
-    RpcHandler* rpcHandler = new RpcHandler();
+    RpcHandler rpcHandler;
 
-    networkHandler->Send(rpcHandler->Serialize(*new Message(startCalculation)).c_str());
+    Message msg(startCalculation);
+    string serialized = rpcHandler.Serialize(msg);
+    networkHandler.Send(serialized.c_str());
 
-    //receiving messages
-    rpcHandler->Deserialize(networkHandler->WaitReceive());
+    // receiving messages
+    rpcHandler.Deserialize(networkHandler.WaitReceive());
 
     string s;
     cin >> s;

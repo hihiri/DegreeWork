@@ -4,5 +4,5 @@
   "SizeZ": 30,
   "log": true,
   "serverIP": "127.0.0.1",
-  "connectionPort": 12345
+  "port": 12345
 }

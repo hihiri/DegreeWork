@@ -6,3 +6,7 @@
 /.vs
 /client/log
 /Debug
+/Deprecated/RpcCommunicator/.vs
+/Deprecated/RpcCommunicator/x64/Debug
+/Deprecated/WClient/x64/Debug
+/Deprecated/WServer/x64/Debug

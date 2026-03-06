@@ -6,22 +6,22 @@ using namespace std;
 
 int main() {    
 
-    auto networkHandler = new ServerNetworkHandler();
+    ServerNetworkHandler networkHandler;
 
-    RpcHandler* rpcHandler = new RpcHandler();
+    RpcHandler rpcHandler;
 
-    string message = networkHandler->WaitReceive();
+    string message = networkHandler.WaitReceive();
 
-    Response response = Response("\"ok\"");
+    Response response("\"ok\"");
     try {
-        Message result = rpcHandler->Deserialize(message);
+        Message result = rpcHandler.Deserialize(message);
     }
-    catch (string ex) {
+    catch (const string& ex) {
         response = Response(ex);
     }
 
-    auto dummy = rpcHandler->Serialize(response);
-    networkHandler->Send(dummy.c_str());
-    
+    auto dummy = rpcHandler.Serialize(response);
+    networkHandler.Send(dummy.c_str());
+
     return 0;
 }

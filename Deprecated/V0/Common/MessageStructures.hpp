@@ -3,17 +3,18 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 using namespace std;
 
 struct param {
-	param(string key, string value) {
-		Key = key;
-		Value = value;
-	}
+    param(const string& key, const string& value) {
+        Key = key;
+        Value = value;
+    }
 
-	string Key;
-	string Value;
+    string Key;
+    string Value;
 };
 
 enum MethodType {
@@ -24,55 +25,52 @@ enum MethodType {
 	ENUM_SIZE
 };
 
-static const char* MethodTypeNames[] = { "Response", "LoadParameters", "StartCalculation", "GetStatus"};
+static const char* MethodTypeNames[] = { "Response", "LoadParameters", "StartCalculation", "GetStatus" };
 
 static_assert(sizeof(MethodTypeNames) / sizeof(char*) == ENUM_SIZE, "type and type name array missmatch");
 
-string toString(MethodType type) {
-	return MethodTypeNames[type];
+inline string toString(MethodType type) {
+    return MethodTypeNames[type];
 }
 
-MethodType toMethodType(string method) {
-	for (unsigned int i = 0; i < ENUM_SIZE; i++) {
-		if (method == MethodTypeNames[i]) {
-			return static_cast<MethodType>(i);
-		}
-	}
-	throw "unkown method type: " + method + "\n";
+inline MethodType toMethodType(const string& method) {
+    for (unsigned int i = 0; i < ENUM_SIZE; i++) {
+        if (method == MethodTypeNames[i]) {
+            return static_cast<MethodType>(i);
+        }
+    }
+    throw string("unkown method type: " + method + "\n");
 }
 
 class Message {
 public:
-	Message(MethodType method) {
-		Method = method;
-	};
+    explicit Message(MethodType method) : Method(method) {}
+    virtual ~Message() = default;
+    virtual vector<param> toVector() {
+        return {};
+    }
 
-	virtual vector<param*> toVector() {
-		return { };
-	}
-
-	MethodType Method;
-	string ResponseMessage;
+    MethodType Method;
+    string ResponseMessage;
 };
 
 class LoadParamsMessage : public Message {
 public:
-	LoadParamsMessage(string message) : Message(loadParams){
-		MessageContent = message;
-	}
+    explicit LoadParamsMessage(const string& message) : Message(loadParams), MessageContent(message) {}
 
-	vector<param*> toVector() {
-		return { new param("MessageContent", MessageContent)};
-	}
+    vector<param> toVector() override {
+        return { param("MessageContent", MessageContent) };
+    }
 
-	string MessageContent;
+    string MessageContent;
 };
 
 class Response : public Message {
 public:
-	Response(string message) : Message(response) {
-		Method = response;
-		ResponseMessage = message;
-	}
+    explicit Response(const string& message) : Message(response) {
+        Method = response;
+        ResponseMessage = message;
+    }
 };
+
 #endif
