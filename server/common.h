@@ -7,4 +7,5 @@ struct CFDConfig { int width=4096; int height=32; };
 
 #define CONFIG_PATH "server/config/config.json"
 #define LOG_PATH "server/log/server.log"
+#define DATA_PATH "server/data_payload.bin"
 #define PORT "12345"

@@ -25,10 +25,9 @@ def main():
             if not os.path.exists(filePath):
                 print('Data file not found:', filePath)
                 sys.exit(1)
-            with open(filePath, 'r') as f:
-                payload = f.read().strip()
             
-            resp = logic.communicate(('2' + payload).encode('ascii'))
+            msg = logic.formatDataMessageFromFile(filePath)
+            resp = logic.communicate(msg)
             if resp and resp[0]==ord('7'):
                 print('Server ack for data')
             elif resp and resp[0]==ord('6'):

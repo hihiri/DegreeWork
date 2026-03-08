@@ -17,12 +17,12 @@ Then run the client with a single argument. (PowerShell or cmd in Windows):
 Usage examples (from project root):
 python client\client.py sendConfig
 python client\client.py getStatus
-python client\client.py sendData:1.txt
+python client\client.py sendData:cfd_init.txt
 python client\client.py getResult
 
-The `sendConfig` command synchronizes the client config with the server `client/config/config.json`.
+The `sendConfig` command synchronizes the client config (log, port, width, height) with the server.
 
-The `sendData:<filename>` command reads the file from `client/data/<filename>` and sends its contents as the payload.
+The `sendData:<filename>` command reads raw bytes from `client/data/<filename>` and sends them as a binary CFD input payload to the server.
 
 Protocol summary:
 - Messages start with a single ASCII digit (message type) followed by payload digits, as described in the ProjectDetails.txt

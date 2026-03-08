@@ -58,10 +58,17 @@ def formatConfigMessage():
     s = f"0|{b}|{width}|{height}"
     return s.encode('ascii')
 
+def formatDataMessageFromFile(filePath):
+    with open(filePath, 'rb') as f:
+        payload = f.read()
+
+    header = f"2|{len(payload)}|".encode('ascii')
+    return header + payload
+
 def usage():
     print('Usage: client.py <command>')
     print('Commands (single argument):')
     print('  sendConfig           Send current client config to server')
     print('  getStatus            Request server status')
-    print('  sendData:<filename>  Send data from client/data/<filename>')
+    print('  sendData:<filename>  Send binary CFD input payload from client/data/<filename>')
     print('  getResult            Request computation result')

@@ -7,6 +7,8 @@
 #include <iterator>
 #include <cctype>
 #include <ctime>
+#include <vector>
+#include <stdexcept>
 
 static std::string nowStr(){
     std::time_t t = std::time(nullptr);
@@ -170,21 +172,58 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
             logMessage(LOG_PATH,"tx",err);
     }
     else {
-        std::string payload = msg.substr(1);
+        // Parse: 2|payloadSize|<binary payload>
         try{
-            savedInput = std::stoi(payload);
-        } catch(const std::exception &ex) {
-            savedInput = 0;
-            std::cerr << "Failed to parse SendData payload: " << ex.what() << "\n";
+            size_t firstDelimiter = msg.find('|', 1);
+            if(firstDelimiter == std::string::npos)
+                throw std::runtime_error("Invalid SendData message: missing payload size delimiter");
+
+            size_t secondDelimiter = msg.find('|', firstDelimiter + 1);
+            if(secondDelimiter == std::string::npos)
+                throw std::runtime_error("Invalid SendData message: missing payload start delimiter");
+
+            int payloadSize = std::stoi(msg.substr(firstDelimiter + 1, secondDelimiter - firstDelimiter - 1));
+            if(payloadSize < 0)
+                throw std::runtime_error("Invalid SendData message: negative payload size");
+
+            std::vector<char> payload;
+            payload.reserve((size_t)payloadSize);
+
+            size_t available = msg.size() - (secondDelimiter + 1);
+            if(available > 0){
+                size_t initialCopy = (available > (size_t)payloadSize) ? (size_t)payloadSize : available;
+                payload.insert(payload.end(), msg.begin() + (secondDelimiter + 1), msg.begin() + (secondDelimiter + 1 + initialCopy));
+            }
+
+            const int BUF_SZ = 1024;
+            char buf[BUF_SZ];
+            while((int)payload.size() < payloadSize){
+                int bytes = srv.recvData(buf, BUF_SZ);
+                if(bytes <= 0)
+                    throw std::runtime_error("Connection closed before full payload was received");
+
+                size_t missing = (size_t)(payloadSize - (int)payload.size());
+                size_t chunk = ((size_t)bytes > missing) ? missing : (size_t)bytes;
+                payload.insert(payload.end(), buf, buf + chunk);
+            }
+
+            std::ofstream out(DATA_PATH, std::ios::binary | std::ios::trunc);
+            out.write(payload.data(), (std::streamsize)payload.size());
+            out.close();
+
+            std::cout << "Received CFD payload bytes: " << payload.size() << "\n";
             if(cfg.log)
-                logMessage(LOG_PATH, "error", std::string("Failed to parse SendData payload: ") + ex.what());
+                logMessage(LOG_PATH, "info", std::string("Received CFD payload bytes: ") + std::to_string(payload.size()));
+        } catch(const std::exception &ex) {
+            std::cerr << "Failed to parse SendData: " << ex.what() << "\n";
+            if(cfg.log)
+                logMessage(LOG_PATH, "error", std::string("Failed to parse SendData: ") + ex.what());
         }
 
         std::string ack = "7";
         srv.sendData(ack.c_str(), (int)ack.size());
         if(cfg.log)
             logMessage(LOG_PATH, "tx", ack);
-        std::cout << "Saved input: " << savedInput << "\n";
     }
 }
 

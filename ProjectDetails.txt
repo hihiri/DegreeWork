@@ -6,7 +6,7 @@ Both Have a config, and a log.
 
 Message trafic is loged on both sides if the corresponding config boolean is true.
 Messages are ASCII/text encoded.
-(in the future, sendData will be binary serialized)
+Exceot for sendData payload, which is binary serialized.
 
 ConfigFormat: JSON
 Config content:
@@ -34,12 +34,17 @@ message content: 1
 response format: 5s where s is the status
 
 SendData:
-Client sends (for now dummy) data to Server.
+Client sends CFD input payload from a file to Server.
 Server on receiving:
 If the status was not 0, sends back error response and does nothing else.
-Otherwise acknowledges the data receipt.
-message format: 2<payload> (message type '2' followed by variable-length payload data)
-Client reads payload from file in client/data/ directory and sends via sendData:<filename>
+Otherwise stores the binary payload and acknowledges receipt.
+Client reads bytes from file in client/data/ directory.
+message format: 2|payloadSize|<binary payload>
+Example: 2|131072|<131072 raw bytes>
+Parameters:
+  payloadSize: Number of payload bytes to read after the second delimiter
+  binary payload: Raw CFD input bytes for later FPGA buffer handoff
+Worth to note that at this point, cfd_init.txt is just a placeholder. Has no relevant data.
 error message content: 6
 ack message content: 7
 
