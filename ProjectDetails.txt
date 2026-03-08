@@ -5,7 +5,8 @@ They communicate via TPC/IP protocol.
 Both Have a config, and a log.
 
 Message trafic is loged on both sides if the corresponding config boolean is true.
-Messages are binary serialized.
+Messages are ASCII/text encoded.
+(in the future, sendData will be binary serialized)
 
 ConfigFormat: JSON
 Config content:
