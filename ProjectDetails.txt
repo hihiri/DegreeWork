@@ -4,45 +4,49 @@ Server does not need to support multiple clients.
 They communicate via TPC/IP protocol.
 Both Have a config, and a log.
 
-Both sides have the same config. (except the server IP not present on the server config)
 Message trafic is loged on both sides if the corresponding config boolean is true.
 Messages are binary serialized.
 
 ConfigFormat: JSON
 Config content:
-"SizeX":int
-"SizeY":int
-"SizeZ":int
 "log":boolean
 "port":int
+"cfdConfig": object (width, height, rho, rhoU, rhoV, energy)
 
 Server ip is in client config, wont be sent in putConfig
 
 Messages:
-General message format: dxxxxxxxxxxxxxxxxxxxx where d is a single digit rest are the message content, lenght depends on the message type
+General message format: dxxxxxxxxxxxxxxxxxxxx where d is a single digit rest is the message content, lenght depends on the message type
 
 SendConfig:
-Client sends the current config content to server. Server on receive logs that it is revceived. Server overwrites the old config with the new one.
-message content: 0xxxyyyzzzb where x y z are always 3 digit each, l is a 0 or 1 depending on config
+Client sends the current config content to server.
+Server on receive, logs that it is received. Server updates its own config with the values received.
+message format: 0|log|width|height|rho|rhoU|rhoV|energy
+Example: 0|1|4096|32|1.0|3.0|0.0|6.2857
+Parameters:
+  log: Logging flag (0 or 1)
+  width, height: Grid dimensions for CFD simulation
+  rho: Density configuration value (float)
+  rhoU: X-momentum density configuration value (float)
+  rhoV: Y-momentum density configuration value (float)
+  energy: Energy configuration value (float)
 
 GetStatus:
-Client sends it to Server.
 Server on receiving sends back the current computation status as Response message, computation status for now is just an internal int default 0
 message content: 1
 response format: 5s where s is the status
 
 SendData:
-Client sends to Server.
+Client sends (for now dummy) data to Server.
 Server on receiving:
 If the status was not 0, sends back error response and does nothing else.
-Otherwise saves the input to local variables. And sends back an ack response.
-message content: 2xxxxxxxxxxxxx where xxxxxx is a placeholder for the actual vaues. For now I just send an integer with value 1995
+Otherwise acknowledges the data receipt.
+message format: 2<payload> (message type '2' followed by variable-length payload data)
+Client reads payload from file in client/data/ directory and sends via sendData:<filename>
 error message content: 6
 ack message content: 7
 
 GetResult:
-Client sends to Server.
-Server on receiving:
 If the satus was not "done" sends back error response. (currently for debug purposes status 1 is considered "done")
 Else sends back the result value. (Currently placeholder value is 2026)
 message content: 3

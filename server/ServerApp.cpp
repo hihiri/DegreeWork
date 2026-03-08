@@ -50,29 +50,32 @@ static Config readConfig(const std::string &path){
            out = (parseIntAfter(s,pos)!=0);
     };
 
-    parseIntField("\"SizeX\"", c.SizeX);
-    parseIntField("\"SizeY\"", c.SizeY);
-    parseIntField("\"SizeZ\"", c.SizeZ);
-    parseIntField("\"connectionPort\"", c.connectionPort);
+    parseIntField("\"port\"", c.port);
     parseBoolField("\"log\"", c.log);
     return c;
 }
 
-static void writeConfig(const std::string &path, const Config &c){
+static void writeConfig(const std::string &path, const Config &c, const CFDConfig &cfd){
     std::ofstream f(path, std::ios::trunc);
     f << "{\n";
-    auto write_field = [&](const char *name, const std::string &value, bool comma){
-        f << "  \"" << name << "\": " << value;
+    auto write_field = [&](const char *name, const std::string &value, bool comma, int indent = 2){
+        f << std::string(indent, ' ') << "\"" << name << "\": " << value;
         if(comma) f << ",";
         f << "\n";
     };
 
-    write_field("SizeX", std::to_string(c.SizeX), true);
-    write_field("SizeY", std::to_string(c.SizeY), true);
-    write_field("SizeZ", std::to_string(c.SizeZ), true);
-    write_field("connectionPort", std::to_string(c.connectionPort), true);
-    write_field("log", (c.log?"true":"false"), false);
-
+    write_field("log", (c.log?"true":"false"), true);
+    write_field("port", std::to_string(c.port), true);
+    
+    f << "  \"cfdConfig\": {\n";
+    write_field("width", std::to_string(cfd.width), true, 4);
+    write_field("height", std::to_string(cfd.height), true, 4);
+    write_field("rho", std::to_string(cfd.rho), true, 4);
+    write_field("rhoU", std::to_string(cfd.rhoU), true, 4);
+    write_field("rhoV", std::to_string(cfd.rhoV), true, 4);
+    write_field("energy", std::to_string(cfd.energy), false, 4);
+    f << "  }\n";
+    
     f << "}\n";
 }
 
@@ -85,7 +88,7 @@ static void logMessage(const std::string &logpath, const std::string &tag, const
     f << std::dec << "\n";
 }
 
-ServerApp::ServerApp() : cfg(readConfig(CONFIG_PATH)), status(0), savedInput(0) {}
+ServerApp::ServerApp() : cfg(readConfig(CONFIG_PATH)), cfdConfig(), status(0), savedInput(0) {}
 
 void ServerApp::run(TcpHandler &srv)
 {
@@ -114,23 +117,63 @@ void ServerApp::run(TcpHandler &srv)
 
 void ServerApp::handleSendConfig(const std::string &msg)
 {
-    if(msg.size()>=11){
-        try{
-            int x = std::stoi(msg.substr(1,3));
-            int y = std::stoi(msg.substr(4,3));
-            int z = std::stoi(msg.substr(7,3));
-            int b = msg[10]-'0';
+    // Parse: 0|log|width|height|rho|rhoU|rhoV|energy
+    try{
+        size_t pos = 1; // Skip '0'
+        size_t delimiter = msg.find('|', pos);
+        
+        if(delimiter != std::string::npos) {
+            int b = msg[pos] - '0';
+            pos = delimiter + 1;
+            
+            delimiter = msg.find('|', pos);
+            int width = std::stoi(msg.substr(pos, delimiter - pos));
+            pos = delimiter + 1;
+            
+            delimiter = msg.find('|', pos);
+            int height = std::stoi(msg.substr(pos, delimiter - pos));
+            pos = delimiter + 1;
+            
+            delimiter = msg.find('|', pos);
+            float rho = std::stof(msg.substr(pos, delimiter - pos));
+            pos = delimiter + 1;
+            
+            delimiter = msg.find('|', pos);
+            float rhoU = std::stof(msg.substr(pos, delimiter - pos));
+            pos = delimiter + 1;
+            
+            delimiter = msg.find('|', pos);
+            float rhoV = std::stof(msg.substr(pos, delimiter - pos));
+            pos = delimiter + 1;
+            
+            float energy = std::stof(msg.substr(pos));
+            
             Config newc;
-            newc.SizeX=x;
-            newc.SizeY=y;
-            newc.SizeZ=z;
-            newc.log = (b!=0);
-            writeConfig(CONFIG_PATH, newc);
+            newc.port = cfg.port;
+            newc.log = (b != 0);
+            
+            cfdConfig.width = width;
+            cfdConfig.height = height;
+            cfdConfig.rho = rho;
+            cfdConfig.rhoU = rhoU;
+            cfdConfig.rhoV = rhoV;
+            cfdConfig.energy = energy;
+            
+            writeConfig(CONFIG_PATH, newc, cfdConfig);
             cfg = newc;
-            std::cout<<"Config overwritten: " << x << "," << y << "," << z << " log=" << newc.log << "\n";
+            
+            std::cout << "Config overwritten: log=" << newc.log << "\n";
+            std::cout << "CFD config: width=" << width << ", height=" << height
+                      << ", rho=" << rho << ", rhoU=" << rhoU
+                      << ", rhoV=" << rhoV << ", energy=" << energy << "\n";
+            
             if(cfg.log)
                 logMessage(LOG_PATH, "info", "Received and saved config");
-        } catch(...){}
+        }
+    } catch(const std::exception &ex){
+        std::cerr << "Failed to parse SendConfig: " << ex.what() << "\n";
+        if(cfg.log)
+            logMessage(LOG_PATH, "error", std::string("Failed to parse SendConfig: ") + ex.what());
     }
 }
 
@@ -156,9 +199,13 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
         std::string payload = msg.substr(1);
         try{
             savedInput = std::stoi(payload);
-        } catch(...) {
+        } catch(const std::exception &ex) {
             savedInput = 0;
+            std::cerr << "Failed to parse SendData payload: " << ex.what() << "\n";
+            if(cfg.log)
+                logMessage(LOG_PATH, "error", std::string("Failed to parse SendData payload: ") + ex.what());
         }
+
         std::string ack = "7";
         srv.sendData(ack.c_str(), (int)ack.size());
         if(cfg.log)

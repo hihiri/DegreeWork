@@ -17,16 +17,18 @@ def main():
 
     match method:
         case 'sendData':
-            # format sendData:filename
-            fname = rest
-            filePath = os.path.join(logic.dataDir, fname)
+            fileName = rest
+            if not fileName:
+                print('Usage: sendData:<filename>')
+                sys.exit(1)
+            filePath = os.path.join(logic.dataDir, fileName)
             if not os.path.exists(filePath):
                 print('Data file not found:', filePath)
                 sys.exit(1)
-            with open(filePath,'r') as f:
+            with open(filePath, 'r') as f:
                 payload = f.read().strip()
-
-            resp = logic.communicate(('2'+payload).encode('ascii'))
+            
+            resp = logic.communicate(('2' + payload).encode('ascii'))
             if resp and resp[0]==ord('7'):
                 print('Server ack for data')
             elif resp and resp[0]==ord('6'):

@@ -9,6 +9,7 @@ public:
     void run(TcpHandler &srv);
 private:
     Config cfg;
+    CFDConfig cfdConfig;
     int status;
     int savedInput;
     void handleSendConfig(const std::string &msg);

@@ -20,7 +20,9 @@ python client\client.py getStatus
 python client\client.py sendData:1.txt
 python client\client.py getResult
 
-The `sendData:<filename>` form reads the file from `client/data/<filename>` and sends its contents as the payload.
+The `sendConfig` command synchronizes the client config with the server `client/config/config.json`.
+
+The `sendData:<filename>` command reads the file from `client/data/<filename>` and sends its contents as the payload.
 
 Protocol summary:
 - Messages start with a single ASCII digit (message type) followed by payload digits, as described in the ProjectDetails.txt

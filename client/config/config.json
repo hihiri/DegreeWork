@@ -1,8 +1,13 @@
 {
-  "SizeX": 10,
-  "SizeY": 20,
-  "SizeZ": 30,
   "log": true,
   "serverIP": "127.0.0.1",
-  "port": 12345
+  "port": 12345,
+  "cfdConfig": {
+    "width": 4096,
+    "height": 32,
+    "rho": 1.0,
+    "rhoU": 3.0,
+    "rhoV": 0.0,
+    "energy": 6.2857
+  }
 }
