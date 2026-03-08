@@ -1,12 +1,23 @@
 Simple TCP server (C++) and Python client implementing the specified protocol in ProjectDetails.txt
 
-Build server (Windows Visual Studio Developer Command Prompt):
+**Build server (Windows Visual Studio Developer Command Prompt):**
+```
 cl /EHsc server\main.cpp /link ws2_32.lib
+```
 
 or using Solution (.sln) build it
 
-Or using g++ (MinGW):
+**Or using g++ (MinGW on Windows):**
+```
 g++ -static -o server.exe server\main.cpp -lws2_32
+```
+
+**Build server (Linux/ARM - for FPGA SoC):**
+```
+g++ -o server server/main.cpp -pthread
+```
+
+The server uses cross-platform socket code with conditional compilation (`#ifdef _WIN32`) for Windows (Winsock2) and POSIX sockets (Linux/ARM).
 
 Configure the IP adress and port on Client, and the port on Server.
 

@@ -1,5 +1,18 @@
 #pragma once
-#include <winsock2.h>
+
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    typedef SOCKET SocketType;
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <netdb.h>
+    #include <unistd.h>
+    typedef int SocketType;
+    #define INVALID_SOCKET -1
+#endif
 
 class TcpHandler {
 public:
@@ -18,7 +31,9 @@ public:
 
 private:
     const char* port;
+#ifdef _WIN32
     WSADATA wsaData{};
-    SOCKET listenSocket = INVALID_SOCKET;
-    SOCKET clientSocket = INVALID_SOCKET;
+#endif
+    SocketType listenSocket = INVALID_SOCKET;
+    SocketType clientSocket = INVALID_SOCKET;
 };

@@ -1,10 +1,10 @@
 #include "TcpHandler.hpp"
-#include <ws2tcpip.h>
 #include <iostream>
 
 TcpHandler::TcpHandler(const char* port): port(port) {
-    WSAStartup(MAKEWORD(2,2),
-    &wsaData);
+#ifdef _WIN32
+    WSAStartup(MAKEWORD(2,2), &wsaData);
+#endif
 }
 
 TcpHandler::~TcpHandler(){ cleanup(); }
@@ -29,18 +29,34 @@ bool TcpHandler::listen()
         return false;
     }
 
+#ifdef _WIN32
     if(bind(listenSocket, result->ai_addr, (int)result->ai_addrlen)==SOCKET_ERROR){
+#else
+    if(bind(listenSocket, result->ai_addr, (int)result->ai_addrlen)==-1){
+#endif
         std::cerr<<"bind failed\n";
         freeaddrinfo(result);
+#ifdef _WIN32
         closesocket(listenSocket);
+#else
+        close(listenSocket);
+#endif
         listenSocket=INVALID_SOCKET;
         return false;
     }
     freeaddrinfo(result);
 
+#ifdef _WIN32
     if(::listen(listenSocket, SOMAXCONN)==SOCKET_ERROR){
+#else
+    if(::listen(listenSocket, SOMAXCONN)==-1){
+#endif
         std::cerr<<"listen failed\n";
+#ifdef _WIN32
         closesocket(listenSocket);
+#else
+        close(listenSocket);
+#endif
         listenSocket=INVALID_SOCKET;
         return false;
     }
@@ -74,7 +90,11 @@ int TcpHandler::sendData(const char* buf, int len)
 void TcpHandler::closeClient()
 {
     if(clientSocket!=INVALID_SOCKET){
+#ifdef _WIN32
         closesocket(clientSocket);
+#else
+        close(clientSocket);
+#endif
         clientSocket = INVALID_SOCKET;
     }
 }
@@ -82,7 +102,11 @@ void TcpHandler::closeClient()
 void TcpHandler::closeListen()
 {
     if(listenSocket!=INVALID_SOCKET){
+#ifdef _WIN32
         closesocket(listenSocket);
+#else
+        close(listenSocket);
+#endif
         listenSocket = INVALID_SOCKET;
     }
 }
@@ -91,5 +115,7 @@ void TcpHandler::cleanup()
 {
     closeClient();
     closeListen();
+#ifdef _WIN32
     WSACleanup();
+#endif
 }
