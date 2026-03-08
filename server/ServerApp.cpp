@@ -20,7 +20,7 @@ static int parseIntAfter(const std::string &s, size_t pos){
     if(colon==std::string::npos)
         return 0;
     size_t i = colon+1;
-    while(i<s.size() && (s[i]==' '||s[i]=='\"'))
+    while(i<s.size() && (s[i]==' '||s[i]=='"'))
         ++i;
     std::string num;
     while(i<s.size() && (s[i]=='-' || std::isdigit((unsigned char)s[i]))) {
@@ -38,27 +38,27 @@ static Config readConfig(const std::string &path){
     if(!f)
         return c;
     std::string s((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-    auto parse_int_field = [&](const std::string &key, int &out){
+    auto parseIntField = [&](const std::string &key, int &out){
         size_t pos = s.find(key);
         if(pos!=std::string::npos)
             out = parseIntAfter(s,pos);
     };
 
-    auto parse_bool_field = [&](const std::string &key, bool &out){
+    auto parseBoolField = [&](const std::string &key, bool &out){
         size_t pos = s.find(key);
         if(pos!=std::string::npos)
            out = (parseIntAfter(s,pos)!=0);
     };
 
-    parse_int_field("\"SizeX\"", c.SizeX);
-    parse_int_field("\"SizeY\"", c.SizeY);
-    parse_int_field("\"SizeZ\"", c.SizeZ);
-    parse_int_field("\"connectionPort\"", c.connectionPort);
-    parse_bool_field("\"log\"", c.log);
+    parseIntField("\"SizeX\"", c.SizeX);
+    parseIntField("\"SizeY\"", c.SizeY);
+    parseIntField("\"SizeZ\"", c.SizeZ);
+    parseIntField("\"connectionPort\"", c.connectionPort);
+    parseBoolField("\"log\"", c.log);
     return c;
 }
 
-static void write_config(const std::string &path, const Config &c){
+static void writeConfig(const std::string &path, const Config &c){
     std::ofstream f(path, std::ios::trunc);
     f << "{\n";
     auto write_field = [&](const char *name, const std::string &value, bool comma){
@@ -76,7 +76,7 @@ static void write_config(const std::string &path, const Config &c){
     f << "}\n";
 }
 
-static void log_message(const std::string &logpath, const std::string &tag, const std::string &msg){
+static void logMessage(const std::string &logpath, const std::string &tag, const std::string &msg){
     std::ofstream f(logpath, std::ios::app);
     f << nowStr() << " [" << tag << "] ";
     for(unsigned char ch : msg){
@@ -95,7 +95,7 @@ void ServerApp::run(TcpHandler &srv)
         int bytes = srv.recvData(buf, BUF_SZ);
         if(bytes<=0) break;
         std::string msg(buf, buf+bytes);
-        if(cfg.log) log_message(LOG_PATH, "rx", msg);
+        if(cfg.log) logMessage(LOG_PATH, "rx", msg);
 
         unsigned char mtype = msg[0];
         if(mtype=='0'){
@@ -125,11 +125,11 @@ void ServerApp::handleSendConfig(const std::string &msg)
             newc.SizeY=y;
             newc.SizeZ=z;
             newc.log = (b!=0);
-            write_config(CONFIG_PATH, newc);
+            writeConfig(CONFIG_PATH, newc);
             cfg = newc;
             std::cout<<"Config overwritten: " << x << "," << y << "," << z << " log=" << newc.log << "\n";
             if(cfg.log)
-                log_message(LOG_PATH, "info", "Received and saved config");
+                logMessage(LOG_PATH, "info", "Received and saved config");
         } catch(...){}
     }
 }
@@ -141,7 +141,7 @@ void ServerApp::handleGetStatus(TcpHandler &srv)
     resp.push_back(char('0' + (status % 10)));
     srv.sendData(resp.c_str(), (int)resp.size());
     if(cfg.log)
-        log_message(LOG_PATH, "tx", resp);
+        logMessage(LOG_PATH, "tx", resp);
 }
 
 void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
@@ -150,7 +150,7 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
         std::string err="6";
         srv.sendData(err.c_str(), (int)err.size());
         if(cfg.log)
-            log_message(LOG_PATH,"tx",err);
+            logMessage(LOG_PATH,"tx",err);
     }
     else {
         std::string payload = msg.substr(1);
@@ -162,7 +162,7 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
         std::string ack = "7";
         srv.sendData(ack.c_str(), (int)ack.size());
         if(cfg.log)
-            log_message(LOG_PATH, "tx", ack);
+            logMessage(LOG_PATH, "tx", ack);
         std::cout << "Saved input: " << savedInput << "\n";
     }
 }
@@ -172,11 +172,11 @@ void ServerApp::handleGetResult(TcpHandler &srv)
     if(status!=1){
         std::string err="8";
         srv.sendData(err.c_str(), (int)err.size());
-        if(cfg.log) log_message(LOG_PATH,"tx",err);
+        if(cfg.log) logMessage(LOG_PATH,"tx",err);
     }
     else {
         std::string resp = "9" + std::string("2026");
         srv.sendData(resp.c_str(), (int)resp.size());
-        if(cfg.log) log_message(LOG_PATH, "tx", resp);
+        if(cfg.log) logMessage(LOG_PATH, "tx", resp);
     }
 }
