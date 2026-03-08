@@ -4,10 +4,6 @@
   "port": 12345,
   "cfdConfig": {
     "width": 4096,
-    "height": 32,
-    "rho": 1.0,
-    "rhoU": 3.0,
-    "rhoV": 0.0,
-    "energy": 6.2857
+    "height": 32
   }
 }

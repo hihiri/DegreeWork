@@ -12,7 +12,7 @@ ConfigFormat: JSON
 Config content:
 "log":boolean
 "port":int
-"cfdConfig": object (width, height, rho, rhoU, rhoV, energy)
+"cfdConfig": object (width, height)
 
 Server ip is in client config, wont be sent in putConfig
 
@@ -22,15 +22,11 @@ General message format: dxxxxxxxxxxxxxxxxxxxx where d is a single digit rest is 
 SendConfig:
 Client sends the current config content to server.
 Server on receive, logs that it is received. Server updates its own config with the values received.
-message format: 0|log|width|height|rho|rhoU|rhoV|energy
-Example: 0|1|4096|32|1.0|3.0|0.0|6.2857
+message format: 0|log|width|height
+Example: 0|1|4096|32
 Parameters:
   log: Logging flag (0 or 1)
   width, height: Grid dimensions for CFD simulation
-  rho: Density configuration value (float)
-  rhoU: X-momentum density configuration value (float)
-  rhoV: Y-momentum density configuration value (float)
-  energy: Energy configuration value (float)
 
 GetStatus:
 Server on receiving sends back the current computation status as Response message, computation status for now is just an internal int default 0

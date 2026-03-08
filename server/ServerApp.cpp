@@ -69,11 +69,7 @@ static void writeConfig(const std::string &path, const Config &c, const CFDConfi
     
     f << "  \"cfdConfig\": {\n";
     write_field("width", std::to_string(cfd.width), true, 4);
-    write_field("height", std::to_string(cfd.height), true, 4);
-    write_field("rho", std::to_string(cfd.rho), true, 4);
-    write_field("rhoU", std::to_string(cfd.rhoU), true, 4);
-    write_field("rhoV", std::to_string(cfd.rhoV), true, 4);
-    write_field("energy", std::to_string(cfd.energy), false, 4);
+    write_field("height", std::to_string(cfd.height), false, 4);
     f << "  }\n";
     
     f << "}\n";
@@ -117,7 +113,7 @@ void ServerApp::run(TcpHandler &srv)
 
 void ServerApp::handleSendConfig(const std::string &msg)
 {
-    // Parse: 0|log|width|height|rho|rhoU|rhoV|energy
+    // Parse: 0|log|width|height
     try{
         size_t pos = 1; // Skip '0'
         size_t delimiter = msg.find('|', pos);
@@ -130,23 +126,7 @@ void ServerApp::handleSendConfig(const std::string &msg)
             int width = std::stoi(msg.substr(pos, delimiter - pos));
             pos = delimiter + 1;
             
-            delimiter = msg.find('|', pos);
-            int height = std::stoi(msg.substr(pos, delimiter - pos));
-            pos = delimiter + 1;
-            
-            delimiter = msg.find('|', pos);
-            float rho = std::stof(msg.substr(pos, delimiter - pos));
-            pos = delimiter + 1;
-            
-            delimiter = msg.find('|', pos);
-            float rhoU = std::stof(msg.substr(pos, delimiter - pos));
-            pos = delimiter + 1;
-            
-            delimiter = msg.find('|', pos);
-            float rhoV = std::stof(msg.substr(pos, delimiter - pos));
-            pos = delimiter + 1;
-            
-            float energy = std::stof(msg.substr(pos));
+            int height = std::stoi(msg.substr(pos));
             
             Config newc;
             newc.port = cfg.port;
@@ -154,18 +134,12 @@ void ServerApp::handleSendConfig(const std::string &msg)
             
             cfdConfig.width = width;
             cfdConfig.height = height;
-            cfdConfig.rho = rho;
-            cfdConfig.rhoU = rhoU;
-            cfdConfig.rhoV = rhoV;
-            cfdConfig.energy = energy;
             
             writeConfig(CONFIG_PATH, newc, cfdConfig);
             cfg = newc;
             
             std::cout << "Config overwritten: log=" << newc.log << "\n";
-            std::cout << "CFD config: width=" << width << ", height=" << height
-                      << ", rho=" << rho << ", rhoU=" << rhoU
-                      << ", rhoV=" << rhoV << ", energy=" << energy << "\n";
+            std::cout << "CFD config: width=" << width << ", height=" << height << "\n";
             
             if(cfg.log)
                 logMessage(LOG_PATH, "info", "Received and saved config");

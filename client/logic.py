@@ -53,13 +53,9 @@ def formatConfigMessage():
     
     width = cfdConfig.get('width', 4096)
     height = cfdConfig.get('height', 32)
-    rho = cfdConfig.get('rho', 1.0)
-    rhoU = cfdConfig.get('rhoU', 3.0)
-    rhoV = cfdConfig.get('rhoV', 0.0)
-    energy = cfdConfig.get('energy', 6.2857)
     
-    # Format: 0|log|width|height|rho|rhoU|rhoV|energy
-    s = f"0|{b}|{width}|{height}|{rho}|{rhoU}|{rhoV}|{energy}"
+    # Format: 0|log|width|height
+    s = f"0|{b}|{width}|{height}"
     return s.encode('ascii')
 
 def usage():
