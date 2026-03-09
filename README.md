@@ -1,39 +1,43 @@
-Simple TCP server (C++) and Python client implementing the specified protocol in ProjectDetails.txt
+# DegreeWork
 
-**Build server (Windows Visual Studio Developer Command Prompt):**
+Simple TCP server (C++) and Python client implementing the protocol specified in `ProjectDetails.md`.
+
+## Build the Server
+
+### Windows (Visual Studio Developer Command Prompt)
 ```
 cl /EHsc server\main.cpp /link ws2_32.lib
 ```
 
-or using Solution (.sln) build it
+### Windows (Visual Studio Solution)
+Open `ServerSolution.sln` and build the `server` project.
 
-**Or using g++ (MinGW on Windows):**
+### Windows (MinGW g++)
 ```
 g++ -static -o server.exe server\main.cpp -lws2_32
 ```
 
-**Build server (Linux/ARM - for FPGA SoC):**
+### Linux/ARM (FPGA SoC)
 ```
 g++ -o server server/main.cpp -pthread
 ```
 
+## Notes
+
 The server uses cross-platform socket code with conditional compilation (`#ifdef _WIN32`) for Windows (Winsock2) and POSIX sockets (Linux/ARM).
 
-Configure the IP adress and port on Client, and the port on Server.
+Configure the IP address and port on the client, and the port on the server.
 
-Run server.exe
+## Run
 
-Then run the client with a single argument. (PowerShell or cmd in Windows):
+1. Start the server (`server.exe` on Windows).
+2. Run the client with a single argument (PowerShell or CMD on Windows).
 
 Usage examples (from project root):
+
+```
 python client\client.py sendConfig
 python client\client.py getStatus
 python client\client.py sendData:cfd_init.txt
 python client\client.py getResult
-
-The `sendConfig` command synchronizes the client config (log, port, width, height) with the server.
-
-The `sendData:<filename>` command reads raw bytes from `client/data/<filename>` and sends them as a binary CFD input payload to the server.
-
-Protocol summary:
-- Messages start with a single ASCII digit (message type) followed by payload digits, as described in the ProjectDetails.txt
+```
