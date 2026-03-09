@@ -84,7 +84,7 @@ Client behavior:
 Server behavior on receive:
 
 - If status is not `0`, sends error response and does nothing else.
-- Otherwise stores the binary payload and acknowledges receipt.
+- Otherwise stores the binary payload and acknowledges.
 
 Format:
 `2|payloadSize|<binary payload>`
