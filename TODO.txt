@@ -1,3 +1,27 @@
+TO BE DISCUSSED:
+Ask TO for exact dates for next possible sibmition
+
+set up some boundary dates for project progression
+
+Neptun changed and need to reenter the form about my degree work (need to ask about it on TO)
+
+at my work people speak English --> English degree would be handy --> submit this in English?
+(to be discussed)
+
+What and how I should document.
+
+With what boundaries should I use AI and how to document it.
+
+Should I migrate everything to ITK repo?
+If so then how to handle it gracefuly: 
+1. is there a conversion
+2. do I loose all git history
+3. should I just branch off from cfd project main, or should I create separate repo
+4. In case of separate repo, how do I handle the existing kernel logic, it has git history.
+
+Content of this project: I lean towards of 3D extention
+
+MY OWN TODO:
 Find a way to gracefuly sync overleaf content to the Documentation\Latex folder.
 Alternatively, just put the pdf here o.O
 
@@ -14,12 +38,3 @@ Modify the OpenCL code to provide input params from server code to kernel.
 Get a mini SD Card
 
 Compile and save on mini SD card for testing.
-
-
-
-
-Official TODO:
-Neptun changed and need to reenter the form about my degree work (need to ask about it on TO)
-
-at my work people speak English --> English degree would be handy --> submit this in English?
-(to be discussed)
