@@ -8,14 +8,15 @@
 - At my workplace, people speak English. Should I submit this degree work in English?
 - Define what and how I should document.
 - Define AI usage boundaries and how to document AI-assisted work.
+- Is the LATEX format of "önlab" good enough, or need a different template?
 - Decide whether to migrate everything to the ITK repo.
 
 If migration to ITK repo is needed:
 
-- Check whether a conversion path exists.
+- Check whether a conversion exists.
 - Verify whether git history can be preserved.
 - Decide between branching from CFD main or creating a separate repo.
-- If using a separate repo, define how to keep existing kernel logic history.
+- If using a separate repo, define how to keep existing kernel logic git history.
 
 - Confirm project scope: currently leaning toward a 3D extension.
 
