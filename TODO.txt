@@ -1,0 +1,25 @@
+Find a way to gracefuly sync overleaf content to the Documentation\Latex folder.
+Alternatively, just put the pdf here o.O
+
+Test the cross platform pragma changes on a Linux (lab computers)
+
+Establish the connection with the lab computer
+
+Merge the Server code with the OpenCL code
+
+Get/generate/write a proper input file for cfd
+
+Modify the OpenCL code to provide input params from server code to kernel.
+
+Get a mini SD Card
+
+Compile and save on mini SD card for testing.
+
+
+
+
+Official TODO:
+Neptun changed and need to reenter the form about my degree work (need to ask about it on TO)
+
+at my work people speak English --> English degree would be handy --> submit this in English?
+(to be discussed)
