@@ -10,6 +10,8 @@
 - Define AI usage boundaries and how to document AI-assisted work.
 - Is the LATEX format of "önlab" good enough, or need a different template?
 - Decide whether to migrate everything to the ITK repo.
+- Confirm project scope: currently leaning toward a 3D extension.
+- Connect matlab to prject? Maybe via the input file. Plot results with matlap via input and output files of the client, or just plot everything with python?
 
 If migration to ITK repo is needed:
 
@@ -17,11 +19,6 @@ If migration to ITK repo is needed:
 - Verify whether git history can be preserved.
 - Decide between branching from CFD main or creating a separate repo.
 - If using a separate repo, define how to keep existing kernel logic git history.
-
-- Confirm project scope: currently leaning toward a 3D extension.
-
-- Connect matlab to prject? Maybe via the input file. Plot results with matlap via input and output files of the client, or just plot everything with python?
-
 ## My Own TODO
 
 - Find if there is a community license for matlab. If we decide to use matlab.
