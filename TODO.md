@@ -20,8 +20,11 @@ If migration to ITK repo is needed:
 
 - Confirm project scope: currently leaning toward a 3D extension.
 
+- Connect matlab to prject? Maybe via the input file. Plot results with matlap via input and output files of the client, or just plot everything with python?
+
 ## My Own TODO
 
+- Find if there is a community license for matlab. If we decide to use matlab.
 - Find a way to gracefully sync Overleaf content to `Documentation\Latex`.
 - Alternatively, place the generated PDF in the repository.
 - Test cross-platform pragma changes on Linux (lab computers).
