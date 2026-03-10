@@ -28,9 +28,9 @@ def main():
             
             msg = logic.formatDataMessageFromFile(filePath)
             resp = logic.communicate(msg)
-            if resp and resp[0]==ord('7'):
+            if resp and resp[:1] == logic.msg_byte(logic.MessageType.DATA_ACK):
                 print('Server ack for data')
-            elif resp and resp[0]==ord('6'):
+            elif resp and resp[:1] == logic.msg_byte(logic.MessageType.BUSY_ERROR):
                 print('Server error: busy')
             else:
                 print('Unexpected data response', resp)
@@ -42,19 +42,19 @@ def main():
             print('Sent config')
 
         case 'getStatus':
-            data = logic.communicate(b'1')
-            if data and data[0]==ord('5') and len(data)>=2:
+            data = logic.communicate(logic.msg_byte(logic.MessageType.GET_STATUS))
+            if data and data[:1] == logic.msg_byte(logic.MessageType.STATUS_RESPONSE) and len(data)>=2:
                 status = data[1:2].decode('ascii')
                 print('Status:', status)
             else:
                 print('Bad status response', data)
 
         case 'getResult':
-            resp = logic.communicate(b'3')
-            if resp and resp[0]==ord('9'):
+            resp = logic.communicate(logic.msg_byte(logic.MessageType.GET_RESULT))
+            if resp and resp[:1] == logic.msg_byte(logic.MessageType.RESULT_RESPONSE):
                 result = resp[1:].decode('ascii')
                 print('Result:', result)
-            elif resp and resp[0]==ord('8'):
+            elif resp and resp[:1] == logic.msg_byte(logic.MessageType.RESULT_NOT_READY_ERROR):
                 print('Server error: result not ready')
             else:
                 print('Unexpected result response', resp)

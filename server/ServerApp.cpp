@@ -98,14 +98,14 @@ void ServerApp::run(TcpHandler &srv)
         std::string msg(buf, buf+bytes);
         if(cfg.log) logMessage(LOG_PATH, "rx", msg);
 
-        unsigned char mtype = msg[0];
-        if(mtype=='0'){
+        char mtype = msg[0];
+        if(mtype==msgChar(MessageType::SendConfig)){
             handleSendConfig(msg);
-        } else if(mtype=='1'){
+        } else if(mtype==msgChar(MessageType::GetStatus)){
             handleGetStatus(srv);
-        } else if(mtype=='2'){
+        } else if(mtype==msgChar(MessageType::SendData)){
             handleSendData(msg, srv);
-        } else if(mtype=='3'){
+        } else if(mtype==msgChar(MessageType::GetResult)){
             handleGetResult(srv);
         } else {
             // to be continued :)
@@ -156,7 +156,7 @@ void ServerApp::handleSendConfig(const std::string &msg)
 void ServerApp::handleGetStatus(TcpHandler &srv)
 {
     std::string resp;
-    resp.push_back('5');
+    resp.push_back(msgChar(MessageType::StatusResponse));
     resp.push_back(char('0' + (status % 10)));
     srv.sendData(resp.c_str(), (int)resp.size());
     if(cfg.log)
@@ -166,7 +166,7 @@ void ServerApp::handleGetStatus(TcpHandler &srv)
 void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
 {
     if(status!=0){
-        std::string err="6";
+        std::string err(1, msgChar(MessageType::BusyError));
         srv.sendData(err.c_str(), (int)err.size());
         if(cfg.log)
             logMessage(LOG_PATH,"tx",err);
@@ -220,7 +220,7 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
                 logMessage(LOG_PATH, "error", std::string("Failed to parse SendData: ") + ex.what());
         }
 
-        std::string ack = "7";
+        std::string ack(1, msgChar(MessageType::DataAck));
         srv.sendData(ack.c_str(), (int)ack.size());
         if(cfg.log)
             logMessage(LOG_PATH, "tx", ack);
@@ -230,12 +230,13 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
 void ServerApp::handleGetResult(TcpHandler &srv)
 {
     if(status!=1){
-        std::string err="8";
+        std::string err(1, msgChar(MessageType::ResultNotReadyError));
         srv.sendData(err.c_str(), (int)err.size());
         if(cfg.log) logMessage(LOG_PATH,"tx",err);
     }
     else {
-        std::string resp = "9" + std::string("2026");
+        std::string resp(1, msgChar(MessageType::ResultResponse));
+        resp += "2026";
         srv.sendData(resp.c_str(), (int)resp.size());
         if(cfg.log) logMessage(LOG_PATH, "tx", resp);
     }

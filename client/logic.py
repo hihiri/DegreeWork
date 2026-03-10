@@ -2,6 +2,7 @@ import os
 import time
 import json
 import socket
+from enum import Enum
 
 BASE = os.path.dirname(__file__)
 configPath = os.path.join(BASE, 'config', 'config.json')
@@ -13,6 +14,20 @@ ip = None
 port = None
 logging = False
 cfdConfig = None
+
+class MessageType(Enum):
+    SEND_CONFIG = '0'
+    GET_STATUS = '1'
+    SEND_DATA = '2'
+    GET_RESULT = '3'
+    STATUS_RESPONSE = '5'
+    BUSY_ERROR = '6'
+    DATA_ACK = '7'
+    RESULT_NOT_READY_ERROR = '8'
+    RESULT_RESPONSE = '9'
+
+def msg_byte(msg_type: MessageType) -> bytes:
+    return msg_type.value.encode('ascii')
 
 def readConfig():
     global ip, port, logging, cfdConfig
@@ -55,14 +70,14 @@ def formatConfigMessage():
     height = cfdConfig.get('height', 32)
     
     # Format: 0|log|width|height
-    s = f"0|{b}|{width}|{height}"
+    s = f"{MessageType.SEND_CONFIG.value}|{b}|{width}|{height}"
     return s.encode('ascii')
 
 def formatDataMessageFromFile(filePath):
     with open(filePath, 'rb') as f:
         payload = f.read()
 
-    header = f"2|{len(payload)}|".encode('ascii')
+    header = f"{MessageType.SEND_DATA.value}|{len(payload)}|".encode('ascii')
     return header + payload
 
 def usage():
