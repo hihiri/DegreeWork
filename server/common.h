@@ -21,6 +21,16 @@ constexpr char msgChar(MessageType type) {
 	return static_cast<char>(type);
 }
 
+enum class ServerStatus : int {
+	Idle = 0,
+	Computing = 1,
+	Done = 2
+};
+
+constexpr int statusCode(ServerStatus status) {
+	return static_cast<int>(status);
+}
+
 #define CONFIG_PATH "server/config/config.json"
 #define LOG_PATH "server/log/server.log"
 #define DATA_PATH "server/data_payload.bin"

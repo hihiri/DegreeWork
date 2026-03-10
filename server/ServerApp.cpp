@@ -9,6 +9,7 @@
 #include <ctime>
 #include <vector>
 #include <stdexcept>
+#include <chrono>
 
 static std::string nowStr(){
     std::time_t t = std::time(nullptr);
@@ -86,7 +87,29 @@ static void logMessage(const std::string &logpath, const std::string &tag, const
     f << std::dec << "\n";
 }
 
-ServerApp::ServerApp() : cfg(readConfig(CONFIG_PATH)), cfdConfig(), status(0), savedInput(0) {}
+ServerApp::ServerApp()
+    : cfg(readConfig(CONFIG_PATH)),
+      cfdConfig(),
+      status(ServerStatus::Idle),
+      savedInput(0),
+      mockTimerActive(false),
+      dataReceivedAt(std::chrono::steady_clock::time_point{}) {}
+
+void ServerApp::updateMockComputationStatus()
+{
+    if(!mockTimerActive || status != ServerStatus::Computing)
+        return;
+
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - dataReceivedAt).count();
+    if(elapsed >= 5){
+        status = ServerStatus::Done;
+        mockTimerActive = false;
+        std::cout << "Mock computation finished -> status=Done\n";
+        if(cfg.log)
+            logMessage(LOG_PATH, "info", "Mock computation finished -> status=Done");
+    }
+}
 
 void ServerApp::run(TcpHandler &srv)
 {
@@ -95,6 +118,7 @@ void ServerApp::run(TcpHandler &srv)
     while(true){
         int bytes = srv.recvData(buf, BUF_SZ);
         if(bytes<=0) break;
+        updateMockComputationStatus();
         std::string msg(buf, buf+bytes);
         if(cfg.log) logMessage(LOG_PATH, "rx", msg);
 
@@ -157,7 +181,7 @@ void ServerApp::handleGetStatus(TcpHandler &srv)
 {
     std::string resp;
     resp.push_back(msgChar(MessageType::StatusResponse));
-    resp.push_back(char('0' + (status % 10)));
+    resp.push_back(char('0' + (statusCode(status) % 10)));
     srv.sendData(resp.c_str(), (int)resp.size());
     if(cfg.log)
         logMessage(LOG_PATH, "tx", resp);
@@ -165,13 +189,15 @@ void ServerApp::handleGetStatus(TcpHandler &srv)
 
 void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
 {
-    if(status!=0){
+    if(status != ServerStatus::Idle){
         std::string err(1, msgChar(MessageType::BusyError));
         srv.sendData(err.c_str(), (int)err.size());
         if(cfg.log)
             logMessage(LOG_PATH,"tx",err);
     }
     else {
+        bool receiveOk = false;
+
         // Parse: 2|payloadSize|<binary payload>
         try{
             size_t firstDelimiter = msg.find('|', 1);
@@ -185,6 +211,8 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
             int payloadSize = std::stoi(msg.substr(firstDelimiter + 1, secondDelimiter - firstDelimiter - 1));
             if(payloadSize < 0)
                 throw std::runtime_error("Invalid SendData message: negative payload size");
+
+            status = ServerStatus::Computing;
 
             std::vector<char> payload;
             payload.reserve((size_t)payloadSize);
@@ -214,30 +242,54 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
             std::cout << "Received CFD payload bytes: " << payload.size() << "\n";
             if(cfg.log)
                 logMessage(LOG_PATH, "info", std::string("Received CFD payload bytes: ") + std::to_string(payload.size()));
+
+            savedInput = 1;
+            mockTimerActive = true;
+            dataReceivedAt = std::chrono::steady_clock::now();
+            receiveOk = true;
+
+            if(cfg.log)
+                logMessage(LOG_PATH, "info", "Mock computation started (5s timer)");
         } catch(const std::exception &ex) {
+            status = ServerStatus::Idle;
+            savedInput = 0;
+            mockTimerActive = false;
             std::cerr << "Failed to parse SendData: " << ex.what() << "\n";
             if(cfg.log)
                 logMessage(LOG_PATH, "error", std::string("Failed to parse SendData: ") + ex.what());
         }
 
-        std::string ack(1, msgChar(MessageType::DataAck));
-        srv.sendData(ack.c_str(), (int)ack.size());
-        if(cfg.log)
-            logMessage(LOG_PATH, "tx", ack);
+        if(receiveOk){
+            std::string ack(1, msgChar(MessageType::DataAck));
+            srv.sendData(ack.c_str(), (int)ack.size());
+            if(cfg.log)
+                logMessage(LOG_PATH, "tx", ack);
+        }
     }
 }
 
 void ServerApp::handleGetResult(TcpHandler &srv)
 {
-    if(status!=1){
-        std::string err(1, msgChar(MessageType::ResultNotReadyError));
-        srv.sendData(err.c_str(), (int)err.size());
-        if(cfg.log) logMessage(LOG_PATH,"tx",err);
+    if(status == ServerStatus::Idle){
+        std::string resp(1, msgChar(MessageType::ResultNotReadyError));
+        resp += "noInput";
+        srv.sendData(resp.c_str(), (int)resp.size());
+        if(cfg.log) logMessage(LOG_PATH,"tx",resp);
+    }
+    else if(status == ServerStatus::Computing){
+        std::string resp(1, msgChar(MessageType::ResultNotReadyError));
+        resp += "computing";
+        srv.sendData(resp.c_str(), (int)resp.size());
+        if(cfg.log) logMessage(LOG_PATH,"tx",resp);
     }
     else {
         std::string resp(1, msgChar(MessageType::ResultResponse));
-        resp += "2026";
+        resp += "2026"; // Mock result data
         srv.sendData(resp.c_str(), (int)resp.size());
         if(cfg.log) logMessage(LOG_PATH, "tx", resp);
+
+        status = ServerStatus::Idle;
+        savedInput = 0;
+        mockTimerActive = false;
     }
 }

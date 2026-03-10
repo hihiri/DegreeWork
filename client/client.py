@@ -55,7 +55,11 @@ def main():
                 result = resp[1:].decode('ascii')
                 print('Result:', result)
             elif resp and resp[:1] == logic.msg_byte(logic.MessageType.RESULT_NOT_READY_ERROR):
-                print('Server error: result not ready')
+                reason = resp[1:].decode('ascii', errors='replace').strip()
+                if reason:
+                    print('Server error:', reason)
+                else:
+                    print('Server error: result not ready')
             else:
                 print('Unexpected result response', resp)
 
