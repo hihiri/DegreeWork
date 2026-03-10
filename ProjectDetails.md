@@ -13,8 +13,8 @@ Documentation Overleaf link:
 ## Logging And Encoding
 
 - Message traffic is logged on both sides when the corresponding config boolean is `true`.
-- Messages are ASCII/text encoded.
-- Exception: the `SendData` payload is binary serialized.
+- Messages use ASCII-encoded headers and text fields.
+- Exception: in `SendData`, the payload section is raw binary bytes.
 
 ## Configuration Format
 
@@ -32,6 +32,18 @@ Fields:
 - General conceptual format: `dxxxxxxxx...`
   - `d`: single-digit message type
   - `x...`: message content (length depends on message type)
+
+## Status States
+
+- `0` = `Idle`
+- `1` = `Computing`
+- `2` = `Done` (result is ready)
+
+Current mock behavior:
+
+- After a valid `SendData`, status is set to `Computing`.
+- After 5 seconds, status transitions to `Done`. (mock logic, later controlled by the kernel computation)
+- After a successful `GetResult`, status is reset to `Idle`.
 
 ## Messages
 
@@ -83,8 +95,9 @@ Client behavior:
 
 Server behavior on receive:
 
-- If status is not `0`, sends error response and does nothing else.
-- Otherwise stores the binary payload and acknowledges.
+- Accepts data only when status is `Idle` (`0`).
+- If status is not `Idle`, sends error response and does nothing else.
+- On successful receive, stores payload, sets status to `Computing` (`1`), and starts a 5-second mock timer. (to be changed later)
 
 Format:
 `2|payloadSize|<binary payload>`
@@ -115,13 +128,13 @@ Request format:
 
 Server behavior:
 
-- If status is not `done`, sends error response.
-- For current debug behavior, status `1` is treated as `done`.
-- If done, sends result value.
+- If status is `Idle`, responds with `8noInput`.
+- If status is `Computing`, responds with `8computing`.
+- If status is `Done`, responds with result and resets status to `Idle`.
 
 Responses:
 
-- Error: `8`
+- Error: `8<reason>` where `<reason>` is currently `noInput` or `computing`
 - Result: `9xxxxxxxxxxxxx` where `x...` is the result payload
 
 Note:
