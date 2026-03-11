@@ -94,20 +94,6 @@ ServerApp::ServerApp()
       savedInput(0),
       mockTimer() {}
 
-void ServerApp::updateMockComputationStatus()
-{
-    if(status != ServerStatus::Computing)
-        return;
-
-    if(mockTimer.shouldCompleteNow()){
-        status = ServerStatus::Done;
-        mockTimer.stop();
-        std::cout << "Mock computation finished -> status=Done\n";
-        if(cfg.log)
-            logMessage(LOG_PATH, "info", "Mock computation finished -> status=Done");
-    }
-}
-
 void ServerApp::run(TcpHandler &srv)
 {
     char buf[SOCKET_BUFFER_SIZE];

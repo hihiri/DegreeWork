@@ -1,4 +1,5 @@
 #include "ServerApp.hpp"
+#include <iostream>
 
 ServerApp::MockComputationTimer::MockComputationTimer()
     : active(false),
@@ -24,4 +25,16 @@ bool ServerApp::MockComputationTimer::shouldCompleteNow() const
 
     auto now = std::chrono::steady_clock::now();
     return (now - startedAt) >= duration;
+}
+
+void ServerApp::updateMockComputationStatus()
+{
+    if(status != ServerStatus::Computing)
+        return;
+
+    if(mockTimer.shouldCompleteNow()){
+        status = ServerStatus::Done;
+        mockTimer.stop();
+        std::cout << "Mock computation finished -> status=Done\n";
+    }
 }
