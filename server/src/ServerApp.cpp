@@ -92,19 +92,16 @@ ServerApp::ServerApp()
       cfdConfig(),
       status(ServerStatus::Idle),
       savedInput(0),
-      mockTimerActive(false),
-      dataReceivedAt(std::chrono::steady_clock::time_point{}) {}
+      mockTimer() {}
 
 void ServerApp::updateMockComputationStatus()
 {
-    if(!mockTimerActive || status != ServerStatus::Computing)
+    if(status != ServerStatus::Computing)
         return;
 
-    auto now = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - dataReceivedAt).count();
-    if(elapsed >= 5){
+    if(mockTimer.shouldCompleteNow()){
         status = ServerStatus::Done;
-        mockTimerActive = false;
+        mockTimer.stop();
         std::cout << "Mock computation finished -> status=Done\n";
         if(cfg.log)
             logMessage(LOG_PATH, "info", "Mock computation finished -> status=Done");
@@ -244,8 +241,7 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
                 logMessage(LOG_PATH, "info", std::string("Received CFD payload bytes: ") + std::to_string(payload.size()));
 
             savedInput = 1;
-            mockTimerActive = true;
-            dataReceivedAt = std::chrono::steady_clock::now();
+            mockTimer.start();
             receiveOk = true;
 
             if(cfg.log)
@@ -253,7 +249,7 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
         } catch(const std::exception &ex) {
             status = ServerStatus::Idle;
             savedInput = 0;
-            mockTimerActive = false;
+            mockTimer.stop();
             std::cerr << "Failed to parse SendData: " << ex.what() << "\n";
             if(cfg.log)
                 logMessage(LOG_PATH, "error", std::string("Failed to parse SendData: ") + ex.what());
@@ -290,6 +286,6 @@ void ServerApp::handleGetResult(TcpHandler &srv)
 
         status = ServerStatus::Idle;
         savedInput = 0;
-        mockTimerActive = false;
+        mockTimer.stop();
     }
 }
