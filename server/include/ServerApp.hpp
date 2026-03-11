@@ -34,6 +34,7 @@ private:
     void onResultRequested(TcpHandler &srv);
 
     //helpers
+    void logMessage(const std::string &tag, const std::string &msg) const;
     int parsePayloadSize(const std::string &msg, size_t &payloadStartIndex) const;
     std::vector<char> receivePayload(const std::string &msg, size_t payloadStartIndex, int payloadSize, TcpHandler &srv) const;
     void savePayload(const std::vector<char> &payload) const;

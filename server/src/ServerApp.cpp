@@ -78,8 +78,12 @@ static void writeConfig(const std::string &path, const Config &c, const CFDConfi
     f << "}\n";
 }
 
-static void logMessage(const std::string &logpath, const std::string &tag, const std::string &msg){
-    std::ofstream f(logpath, std::ios::app);
+void ServerApp::logMessage(const std::string &tag, const std::string &msg) const
+{
+    if(!cfg.log)
+        return;
+
+    std::ofstream f(LOG_PATH, std::ios::app);
     f << nowStr() << " [" << tag << "] ";
     for(unsigned char ch : msg){
         f << std::hex << std::setw(2) << std::setfill('0') << (int)ch << " ";
@@ -102,7 +106,7 @@ void ServerApp::run(TcpHandler &srv)
         if(bytes<=0) break;
         updateMockComputationStatus();
         std::string msg(buf, buf+bytes);
-        if(cfg.log) logMessage(LOG_PATH, "rx", msg);
+        logMessage("rx", msg);
 
         char mtype = msg[0];
         switch(mtype){
@@ -151,13 +155,11 @@ void ServerApp::onConfigReceived(const std::string &msg)
             std::cout << "Config overwritten: log=" << newc.log << "\n";
             std::cout << "CFD config: width=" << width << ", height=" << height << "\n";
             
-            if(cfg.log)
-                logMessage(LOG_PATH, "info", "Received and saved config");
+            logMessage("info", "Received and saved config");
         }
     } catch(const std::exception &ex){
         std::cerr << "Failed to parse SendConfig: " << ex.what() << "\n";
-        if(cfg.log)
-            logMessage(LOG_PATH, "error", std::string("Failed to parse SendConfig: ") + ex.what());
+        logMessage("error", std::string("Failed to parse SendConfig: ") + ex.what());
     }
 }
 
@@ -167,8 +169,7 @@ void ServerApp::onStatusRequested(TcpHandler &srv)
     resp.push_back(msgChar(MessageType::StatusResponse));
     resp.push_back(char('0' + (statusCode(status) % 10)));
     srv.sendData(resp.c_str(), (int)resp.size());
-    if(cfg.log)
-        logMessage(LOG_PATH, "tx", resp);
+    logMessage("tx", resp);
 }
 
 void ServerApp::onDataReceived(const std::string &msg, TcpHandler &srv)
@@ -176,8 +177,7 @@ void ServerApp::onDataReceived(const std::string &msg, TcpHandler &srv)
     if(status != ServerStatus::Idle){
         std::string err(1, msgChar(MessageType::BusyError));
         srv.sendData(err.c_str(), (int)err.size());
-        if(cfg.log)
-            logMessage(LOG_PATH,"tx",err);
+        logMessage("tx", err);
     }
     else {
         bool receiveOk = false;
@@ -198,8 +198,7 @@ void ServerApp::onDataReceived(const std::string &msg, TcpHandler &srv)
         if(receiveOk){
             std::string ack(1, msgChar(MessageType::DataAck));
             srv.sendData(ack.c_str(), (int)ack.size());
-            if(cfg.log)
-                logMessage(LOG_PATH, "tx", ack);
+            logMessage("tx", ack);
         }
     }
 }
@@ -257,14 +256,12 @@ void ServerApp::savePayload(const std::vector<char> &payload) const
 void ServerApp::completeDataReceive(size_t payloadBytes)
 {
     std::cout << "Received CFD payload bytes: " << payloadBytes << "\n";
-    if(cfg.log)
-        logMessage(LOG_PATH, "info", std::string("Received CFD payload bytes: ") + std::to_string(payloadBytes));
+    logMessage("info", std::string("Received CFD payload bytes: ") + std::to_string(payloadBytes));
 
     savedInput = 1;
     mockTimer.start();
 
-    if(cfg.log)
-        logMessage(LOG_PATH, "info", "Mock computation started (5s timer)");
+    logMessage("info", "Mock computation started (5s timer)");
 }
 
 void ServerApp::rollbackDataReceive(const std::string &reason)
@@ -273,8 +270,7 @@ void ServerApp::rollbackDataReceive(const std::string &reason)
     savedInput = 0;
     mockTimer.stop();
     std::cerr << "Failed to parse SendData: " << reason << "\n";
-    if(cfg.log)
-        logMessage(LOG_PATH, "error", std::string("Failed to parse SendData: ") + reason);
+    logMessage("error", std::string("Failed to parse SendData: ") + reason);
 }
 
 void ServerApp::onResultRequested(TcpHandler &srv)
@@ -284,7 +280,7 @@ void ServerApp::onResultRequested(TcpHandler &srv)
             std::string resp(1, msgChar(MessageType::ResultNotReadyError));
             resp += "noInput";
             srv.sendData(resp.c_str(), (int)resp.size());
-            if(cfg.log) logMessage(LOG_PATH,"tx",resp);
+            logMessage("tx", resp);
             break;
         }
 
@@ -292,7 +288,7 @@ void ServerApp::onResultRequested(TcpHandler &srv)
             std::string resp(1, msgChar(MessageType::ResultNotReadyError));
             resp += "computing";
             srv.sendData(resp.c_str(), (int)resp.size());
-            if(cfg.log) logMessage(LOG_PATH,"tx",resp);
+            logMessage("tx", resp);
             break;
         }
 
@@ -302,7 +298,7 @@ void ServerApp::onResultRequested(TcpHandler &srv)
             std::string resp(1, msgChar(MessageType::ResultResponse));
             resp += "2026"; // Mock result data
             srv.sendData(resp.c_str(), (int)resp.size());
-            if(cfg.log) logMessage(LOG_PATH, "tx", resp);
+            logMessage("tx", resp);
 
             status = ServerStatus::Idle;
             savedInput = 0;
