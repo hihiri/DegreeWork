@@ -105,16 +105,18 @@ void ServerApp::run(TcpHandler &srv)
         if(cfg.log) logMessage(LOG_PATH, "rx", msg);
 
         char mtype = msg[0];
-        if(mtype==msgChar(MessageType::SendConfig)){
-            onConfigReceived(msg);
-        } else if(mtype==msgChar(MessageType::GetStatus)){
-            onStatusRequested(srv);
-        } else if(mtype==msgChar(MessageType::SendData)){
-            onDataReceived(msg, srv);
-        } else if(mtype==msgChar(MessageType::GetResult)){
-            onResultRequested(srv);
-        } else {
-            // to be continued :)
+        switch(mtype){
+            case msgChar(MessageType::SendConfig):
+                onConfigReceived(msg); break;
+            case msgChar(MessageType::GetStatus):
+                onStatusRequested(srv); break;
+            case msgChar(MessageType::SendData):
+                onDataReceived(msg, srv); break;
+            case msgChar(MessageType::GetResult):
+                onResultRequested(srv); break;
+            default:
+                // to be continued :)
+            break;
         }
     }
 }
@@ -277,26 +279,35 @@ void ServerApp::rollbackDataReceive(const std::string &reason)
 
 void ServerApp::onResultRequested(TcpHandler &srv)
 {
-    if(status == ServerStatus::Idle){
-        std::string resp(1, msgChar(MessageType::ResultNotReadyError));
-        resp += "noInput";
-        srv.sendData(resp.c_str(), (int)resp.size());
-        if(cfg.log) logMessage(LOG_PATH,"tx",resp);
-    }
-    else if(status == ServerStatus::Computing){
-        std::string resp(1, msgChar(MessageType::ResultNotReadyError));
-        resp += "computing";
-        srv.sendData(resp.c_str(), (int)resp.size());
-        if(cfg.log) logMessage(LOG_PATH,"tx",resp);
-    }
-    else {
-        std::string resp(1, msgChar(MessageType::ResultResponse));
-        resp += "2026"; // Mock result data
-        srv.sendData(resp.c_str(), (int)resp.size());
-        if(cfg.log) logMessage(LOG_PATH, "tx", resp);
+    switch(status){
+        case ServerStatus::Idle: {
+            std::string resp(1, msgChar(MessageType::ResultNotReadyError));
+            resp += "noInput";
+            srv.sendData(resp.c_str(), (int)resp.size());
+            if(cfg.log) logMessage(LOG_PATH,"tx",resp);
+            break;
+        }
 
-        status = ServerStatus::Idle;
-        savedInput = 0;
-        mockTimer.stop();
+        case ServerStatus::Computing: {
+            std::string resp(1, msgChar(MessageType::ResultNotReadyError));
+            resp += "computing";
+            srv.sendData(resp.c_str(), (int)resp.size());
+            if(cfg.log) logMessage(LOG_PATH,"tx",resp);
+            break;
+        }
+
+        case ServerStatus::Done:
+        
+        default: {
+            std::string resp(1, msgChar(MessageType::ResultResponse));
+            resp += "2026"; // Mock result data
+            srv.sendData(resp.c_str(), (int)resp.size());
+            if(cfg.log) logMessage(LOG_PATH, "tx", resp);
+
+            status = ServerStatus::Idle;
+            savedInput = 0;
+            mockTimer.stop();
+            break;
+        }
     }
 }
