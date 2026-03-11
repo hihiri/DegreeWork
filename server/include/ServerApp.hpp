@@ -1,6 +1,7 @@
 #pragma once
 #include "common.h"
 #include <chrono>
+#include <vector>
 
 class TcpHandler;
 
@@ -31,4 +32,11 @@ private:
     void onStatusRequested(TcpHandler &srv);
     void onDataReceived(const std::string &msg, TcpHandler &srv);
     void onResultRequested(TcpHandler &srv);
+
+    //helpers
+    int parsePayloadSize(const std::string &msg, size_t &payloadStartIndex) const;
+    std::vector<char> receivePayload(const std::string &msg, size_t payloadStartIndex, int payloadSize, TcpHandler &srv) const;
+    void savePayload(const std::vector<char> &payload) const;
+    void completeDataReceive(size_t payloadBytes);
+    void rollbackDataReceive(const std::string &reason);
 };

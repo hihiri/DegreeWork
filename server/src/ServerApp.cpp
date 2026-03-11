@@ -180,63 +180,17 @@ void ServerApp::onDataReceived(const std::string &msg, TcpHandler &srv)
     else {
         bool receiveOk = false;
 
-        // Parse: 2|payloadSize|<binary payload>
         try{
-            size_t firstDelimiter = msg.find('|', 1);
-            if(firstDelimiter == std::string::npos)
-                throw std::runtime_error("Invalid SendData message: missing payload size delimiter");
-
-            size_t secondDelimiter = msg.find('|', firstDelimiter + 1);
-            if(secondDelimiter == std::string::npos)
-                throw std::runtime_error("Invalid SendData message: missing payload start delimiter");
-
-            int payloadSize = std::stoi(msg.substr(firstDelimiter + 1, secondDelimiter - firstDelimiter - 1));
-            if(payloadSize < 0)
-                throw std::runtime_error("Invalid SendData message: negative payload size");
-
             status = ServerStatus::Computing;
 
-            std::vector<char> payload;
-            payload.reserve((size_t)payloadSize);
-
-            size_t available = msg.size() - (secondDelimiter + 1);
-            if(available > 0){
-                size_t initialCopy = (available > (size_t)payloadSize) ? (size_t)payloadSize : available;
-                payload.insert(payload.end(), msg.begin() + (secondDelimiter + 1), msg.begin() + (secondDelimiter + 1 + initialCopy));
-            }
-
-            char buf[SOCKET_BUFFER_SIZE];
-            while((int)payload.size() < payloadSize){
-                int bytes = srv.recvData(buf, SOCKET_BUFFER_SIZE);
-                if(bytes <= 0)
-                    throw std::runtime_error("Connection closed before full payload was received");
-
-                size_t missing = (size_t)(payloadSize - (int)payload.size());
-                size_t chunk = ((size_t)bytes > missing) ? missing : (size_t)bytes;
-                payload.insert(payload.end(), buf, buf + chunk);
-            }
-
-            std::ofstream out(DATA_PATH, std::ios::binary | std::ios::trunc);
-            out.write(payload.data(), (std::streamsize)payload.size());
-            out.close();
-
-            std::cout << "Received CFD payload bytes: " << payload.size() << "\n";
-            if(cfg.log)
-                logMessage(LOG_PATH, "info", std::string("Received CFD payload bytes: ") + std::to_string(payload.size()));
-
-            savedInput = 1;
-            mockTimer.start();
+            size_t payloadStartIndex = 0;
+            int payloadSize = parsePayloadSize(msg, payloadStartIndex);
+            std::vector<char> payload = receivePayload(msg, payloadStartIndex, payloadSize, srv);
+            savePayload(payload);
+            completeDataReceive(payload.size());
             receiveOk = true;
-
-            if(cfg.log)
-                logMessage(LOG_PATH, "info", "Mock computation started (5s timer)");
         } catch(const std::exception &ex) {
-            status = ServerStatus::Idle;
-            savedInput = 0;
-            mockTimer.stop();
-            std::cerr << "Failed to parse SendData: " << ex.what() << "\n";
-            if(cfg.log)
-                logMessage(LOG_PATH, "error", std::string("Failed to parse SendData: ") + ex.what());
+            rollbackDataReceive(ex.what());
         }
 
         if(receiveOk){
@@ -246,6 +200,79 @@ void ServerApp::onDataReceived(const std::string &msg, TcpHandler &srv)
                 logMessage(LOG_PATH, "tx", ack);
         }
     }
+}
+
+int ServerApp::parsePayloadSize(const std::string &msg, size_t &payloadStartIndex) const
+{
+    size_t firstDelimiter = msg.find('|', 1);
+    if(firstDelimiter == std::string::npos)
+        throw std::runtime_error("Invalid SendData message: missing payload size delimiter");
+
+    size_t secondDelimiter = msg.find('|', firstDelimiter + 1);
+    if(secondDelimiter == std::string::npos)
+        throw std::runtime_error("Invalid SendData message: missing payload start delimiter");
+
+    int payloadSize = std::stoi(msg.substr(firstDelimiter + 1, secondDelimiter - firstDelimiter - 1));
+    if(payloadSize < 0)
+        throw std::runtime_error("Invalid SendData message: negative payload size");
+
+    payloadStartIndex = secondDelimiter + 1;
+    return payloadSize;
+}
+
+std::vector<char> ServerApp::receivePayload(const std::string &msg, size_t payloadStartIndex, int payloadSize, TcpHandler &srv) const
+{
+    std::vector<char> payload;
+    payload.reserve((size_t)payloadSize);
+
+    size_t available = msg.size() - payloadStartIndex;
+    if(available > 0){
+        size_t initialCopy = (available > (size_t)payloadSize) ? (size_t)payloadSize : available;
+        payload.insert(payload.end(), msg.begin() + payloadStartIndex, msg.begin() + (payloadStartIndex + initialCopy));
+    }
+
+    char buf[SOCKET_BUFFER_SIZE];
+    while((int)payload.size() < payloadSize){
+        int bytes = srv.recvData(buf, SOCKET_BUFFER_SIZE);
+        if(bytes <= 0)
+            throw std::runtime_error("Connection closed before full payload was received");
+
+        size_t missing = (size_t)(payloadSize - (int)payload.size());
+        size_t chunk = ((size_t)bytes > missing) ? missing : (size_t)bytes;
+        payload.insert(payload.end(), buf, buf + chunk);
+    }
+
+    return payload;
+}
+
+void ServerApp::savePayload(const std::vector<char> &payload) const
+{
+    std::ofstream out(DATA_PATH, std::ios::binary | std::ios::trunc);
+    out.write(payload.data(), (std::streamsize)payload.size());
+    out.close();
+}
+
+void ServerApp::completeDataReceive(size_t payloadBytes)
+{
+    std::cout << "Received CFD payload bytes: " << payloadBytes << "\n";
+    if(cfg.log)
+        logMessage(LOG_PATH, "info", std::string("Received CFD payload bytes: ") + std::to_string(payloadBytes));
+
+    savedInput = 1;
+    mockTimer.start();
+
+    if(cfg.log)
+        logMessage(LOG_PATH, "info", "Mock computation started (5s timer)");
+}
+
+void ServerApp::rollbackDataReceive(const std::string &reason)
+{
+    status = ServerStatus::Idle;
+    savedInput = 0;
+    mockTimer.stop();
+    std::cerr << "Failed to parse SendData: " << reason << "\n";
+    if(cfg.log)
+        logMessage(LOG_PATH, "error", std::string("Failed to parse SendData: ") + reason);
 }
 
 void ServerApp::onResultRequested(TcpHandler &srv)
