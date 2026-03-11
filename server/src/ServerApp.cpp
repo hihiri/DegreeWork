@@ -106,20 +106,20 @@ void ServerApp::run(TcpHandler &srv)
 
         char mtype = msg[0];
         if(mtype==msgChar(MessageType::SendConfig)){
-            handleSendConfig(msg);
+            onConfigReceived(msg);
         } else if(mtype==msgChar(MessageType::GetStatus)){
-            handleGetStatus(srv);
+            onStatusRequested(srv);
         } else if(mtype==msgChar(MessageType::SendData)){
-            handleSendData(msg, srv);
+            onDataReceived(msg, srv);
         } else if(mtype==msgChar(MessageType::GetResult)){
-            handleGetResult(srv);
+            onResultRequested(srv);
         } else {
             // to be continued :)
         }
     }
 }
 
-void ServerApp::handleSendConfig(const std::string &msg)
+void ServerApp::onConfigReceived(const std::string &msg)
 {
     // Parse: 0|log|width|height
     try{
@@ -159,7 +159,7 @@ void ServerApp::handleSendConfig(const std::string &msg)
     }
 }
 
-void ServerApp::handleGetStatus(TcpHandler &srv)
+void ServerApp::onStatusRequested(TcpHandler &srv)
 {
     std::string resp;
     resp.push_back(msgChar(MessageType::StatusResponse));
@@ -169,7 +169,7 @@ void ServerApp::handleGetStatus(TcpHandler &srv)
         logMessage(LOG_PATH, "tx", resp);
 }
 
-void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
+void ServerApp::onDataReceived(const std::string &msg, TcpHandler &srv)
 {
     if(status != ServerStatus::Idle){
         std::string err(1, msgChar(MessageType::BusyError));
@@ -248,7 +248,7 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
     }
 }
 
-void ServerApp::handleGetResult(TcpHandler &srv)
+void ServerApp::onResultRequested(TcpHandler &srv)
 {
     if(status == ServerStatus::Idle){
         std::string resp(1, msgChar(MessageType::ResultNotReadyError));

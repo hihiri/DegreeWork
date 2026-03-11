@@ -27,8 +27,8 @@ private:
     MockComputationTimer mockTimer;
 
     void updateMockComputationStatus();
-    void handleSendConfig(const std::string &msg);
-    void handleGetStatus(TcpHandler &srv);
-    void handleSendData(const std::string &msg, TcpHandler &srv);
-    void handleGetResult(TcpHandler &srv);
+    void onConfigReceived(const std::string &msg);
+    void onStatusRequested(TcpHandler &srv);
+    void onDataReceived(const std::string &msg, TcpHandler &srv);
+    void onResultRequested(TcpHandler &srv);
 };
