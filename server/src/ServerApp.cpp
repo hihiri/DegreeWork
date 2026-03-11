@@ -1,11 +1,9 @@
 #include "ServerApp.hpp"
+#include "ConfigHandler.hpp"
 #include "TcpHandler.hpp"
 #include <fstream>
-#include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <iterator>
-#include <cctype>
 #include <ctime>
 #include <vector>
 #include <stdexcept>
@@ -16,66 +14,6 @@ static std::string nowStr(){
     char buf[64];
     std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&t));
     return std::string(buf);
-}
-
-static int parseIntAfter(const std::string &s, size_t pos){
-    size_t colon = s.find(':', pos);
-    if(colon==std::string::npos)
-        return 0;
-    size_t i = colon+1;
-    while(i<s.size() && (s[i]==' '||s[i]=='"'))
-        ++i;
-    std::string num;
-    while(i<s.size() && (s[i]=='-' || std::isdigit((unsigned char)s[i]))) {
-        num.push_back(s[i]);
-        ++i;
-    }
-    if(num.empty())
-        return 0;
-    return std::stoi(num);
-}
-
-static Config readConfig(const std::string &path){
-    Config c;
-    std::ifstream f(path);
-    if(!f)
-        return c;
-    std::string s((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-    auto parseIntField = [&](const std::string &key, int &out){
-        size_t pos = s.find(key);
-        if(pos!=std::string::npos)
-            out = parseIntAfter(s,pos);
-    };
-
-    auto parseBoolField = [&](const std::string &key, bool &out){
-        size_t pos = s.find(key);
-        if(pos!=std::string::npos)
-           out = (parseIntAfter(s,pos)!=0);
-    };
-
-    parseIntField("\"port\"", c.port);
-    parseBoolField("\"log\"", c.log);
-    return c;
-}
-
-static void writeConfig(const std::string &path, const Config &c, const CFDConfig &cfd){
-    std::ofstream f(path, std::ios::trunc);
-    f << "{\n";
-    auto write_field = [&](const char *name, const std::string &value, bool comma, int indent = 2){
-        f << std::string(indent, ' ') << "\"" << name << "\": " << value;
-        if(comma) f << ",";
-        f << "\n";
-    };
-
-    write_field("log", (c.log?"true":"false"), true);
-    write_field("port", std::to_string(c.port), true);
-    
-    f << "  \"cfdConfig\": {\n";
-    write_field("width", std::to_string(cfd.width), true, 4);
-    write_field("height", std::to_string(cfd.height), false, 4);
-    f << "  }\n";
-    
-    f << "}\n";
 }
 
 void ServerApp::logMessage(const std::string &tag, const std::string &msg) const
@@ -92,7 +30,7 @@ void ServerApp::logMessage(const std::string &tag, const std::string &msg) const
 }
 
 ServerApp::ServerApp()
-    : cfg(readConfig(CONFIG_PATH)),
+    : cfg(ConfigHandler::read(CONFIG_PATH)),
       cfdConfig(),
       status(ServerStatus::Idle),
       savedInput(0),
@@ -149,7 +87,7 @@ void ServerApp::onConfigReceived(const std::string &msg)
             cfdConfig.width = width;
             cfdConfig.height = height;
             
-            writeConfig(CONFIG_PATH, newc, cfdConfig);
+            ConfigHandler::write(CONFIG_PATH, newc, cfdConfig);
             cfg = newc;
             
             std::cout << "Config overwritten: log=" << newc.log << "\n";

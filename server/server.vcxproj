@@ -70,12 +70,14 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClInclude Include="include\ConfigHandler.hpp" />
     <ClInclude Include="include\common.h" />
     <ClInclude Include="include\ServerApp.hpp" />
     <ClInclude Include="include\TcpHandler.hpp" />
   </ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="src\ConfigHandler.cpp" />
     <ClCompile Include="src\MockComputationTimer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ServerApp.cpp" />
