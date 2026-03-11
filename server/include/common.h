@@ -31,6 +31,8 @@ constexpr int statusCode(ServerStatus status) {
 	return static_cast<int>(status);
 }
 
+constexpr int SOCKET_BUFFER_SIZE = 1024;
+
 #define CONFIG_PATH "server/config/config.json"
 #define LOG_PATH "server/log/server.log"
 #define DATA_PATH "server/data_payload.bin"

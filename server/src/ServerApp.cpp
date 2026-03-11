@@ -110,10 +110,9 @@ void ServerApp::updateMockComputationStatus()
 
 void ServerApp::run(TcpHandler &srv)
 {
-    const int BUF_SZ = 1024;
-    char buf[BUF_SZ];
+    char buf[SOCKET_BUFFER_SIZE];
     while(true){
-        int bytes = srv.recvData(buf, BUF_SZ);
+        int bytes = srv.recvData(buf, SOCKET_BUFFER_SIZE);
         if(bytes<=0) break;
         updateMockComputationStatus();
         std::string msg(buf, buf+bytes);
@@ -220,10 +219,9 @@ void ServerApp::handleSendData(const std::string &msg, TcpHandler &srv)
                 payload.insert(payload.end(), msg.begin() + (secondDelimiter + 1), msg.begin() + (secondDelimiter + 1 + initialCopy));
             }
 
-            const int BUF_SZ = 1024;
-            char buf[BUF_SZ];
+            char buf[SOCKET_BUFFER_SIZE];
             while((int)payload.size() < payloadSize){
-                int bytes = srv.recvData(buf, BUF_SZ);
+                int bytes = srv.recvData(buf, SOCKET_BUFFER_SIZE);
                 if(bytes <= 0)
                     throw std::runtime_error("Connection closed before full payload was received");
 
