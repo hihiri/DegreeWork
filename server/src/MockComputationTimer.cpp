@@ -1,40 +1,16 @@
 #include "ServerApp.hpp"
 #include <iostream>
+#include <thread>
 
-ServerApp::MockComputationTimer::MockComputationTimer()
-    : active(false),
-      startedAt(std::chrono::steady_clock::time_point{}),
-      duration(std::chrono::seconds(5)) {}
-
-void ServerApp::MockComputationTimer::start()
+void ServerApp::startMockComputation()
 {
-    active = true;
-    startedAt = std::chrono::steady_clock::now();
-}
+    std::thread([this](){
+        std::this_thread::sleep_for(std::chrono::seconds(5));
 
-void ServerApp::MockComputationTimer::stop()
-{
-    active = false;
-    startedAt = std::chrono::steady_clock::time_point{};
-}
+        if(status.load() != ServerStatus::Computing)
+            return;
 
-bool ServerApp::MockComputationTimer::shouldCompleteNow() const
-{
-    if(!active)
-        return false;
-
-    auto now = std::chrono::steady_clock::now();
-    return (now - startedAt) >= duration;
-}
-
-void ServerApp::updateMockComputationStatus()
-{
-    if(status != ServerStatus::Computing)
-        return;
-
-    if(mockTimer.shouldCompleteNow()){
-        status = ServerStatus::Done;
-        mockTimer.stop();
+        status.store(ServerStatus::Done);
         std::cout << "Mock computation finished -> status=Done\n";
-    }
+    }).detach();
 }

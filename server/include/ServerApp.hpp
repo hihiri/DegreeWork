@@ -1,6 +1,6 @@
 #pragma once
 #include "common.h"
-#include <chrono>
+#include <atomic>
 #include <vector>
 
 class TcpHandler;
@@ -10,24 +10,12 @@ public:
     ServerApp();
     void run(TcpHandler &srv);
 private:
-    struct MockComputationTimer {
-        bool active;
-        std::chrono::steady_clock::time_point startedAt;
-        std::chrono::seconds duration;
-
-        MockComputationTimer();
-        void start();
-        void stop();
-        bool shouldCompleteNow() const;
-    };
-
     Config cfg;
     CFDConfig cfdConfig;
-    ServerStatus status;
+    std::atomic<ServerStatus> status;
     int savedInput;
-    MockComputationTimer mockTimer;
 
-    void updateMockComputationStatus();
+    void startMockComputation(); //for testing
     void onConfigReceived(const std::string &msg);
     void onStatusRequested(TcpHandler &srv);
     void onDataReceived(const std::string &msg, TcpHandler &srv);

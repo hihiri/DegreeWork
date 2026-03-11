@@ -33,8 +33,7 @@ ServerApp::ServerApp()
     : cfg(ConfigHandler::read()),
       cfdConfig(),
       status(ServerStatus::Idle),
-      savedInput(0),
-      mockTimer() {}
+    savedInput(0) {}
 
 void ServerApp::run(TcpHandler &srv)
 {
@@ -42,7 +41,6 @@ void ServerApp::run(TcpHandler &srv)
     while(true){
         int bytes = srv.recvData(buf, SOCKET_BUFFER_SIZE);
         if(bytes<=0) break;
-        updateMockComputationStatus();
         std::string msg(buf, buf+bytes);
         logMessage("rx", msg);
 
@@ -105,14 +103,14 @@ void ServerApp::onStatusRequested(TcpHandler &srv)
 {
     std::string resp;
     resp.push_back(msgChar(MessageType::StatusResponse));
-    resp.push_back(char('0' + (statusCode(status) % 10)));
+    resp.push_back(char('0' + (statusCode(status.load()) % 10)));
     srv.sendData(resp.c_str(), (int)resp.size());
     logMessage("tx", resp);
 }
 
 void ServerApp::onDataReceived(const std::string &msg, TcpHandler &srv)
 {
-    if(status != ServerStatus::Idle){
+    if(status.load() != ServerStatus::Idle){
         std::string err(1, msgChar(MessageType::BusyError));
         srv.sendData(err.c_str(), (int)err.size());
         logMessage("tx", err);
@@ -121,7 +119,7 @@ void ServerApp::onDataReceived(const std::string &msg, TcpHandler &srv)
         bool receiveOk = false;
 
         try{
-            status = ServerStatus::Computing;
+            status.store(ServerStatus::Computing);
 
             size_t payloadStartIndex = 0;
             int payloadSize = parsePayloadSize(msg, payloadStartIndex);
@@ -197,23 +195,22 @@ void ServerApp::completeDataReceive(size_t payloadBytes)
     logMessage("info", std::string("Received CFD payload bytes: ") + std::to_string(payloadBytes));
 
     savedInput = 1;
-    mockTimer.start();
+    startMockComputation();
 
     logMessage("info", "Mock computation started (5s timer)");
 }
 
 void ServerApp::rollbackDataReceive(const std::string &reason)
 {
-    status = ServerStatus::Idle;
+    status.store(ServerStatus::Idle);
     savedInput = 0;
-    mockTimer.stop();
     std::cerr << "Failed to parse SendData: " << reason << "\n";
     logMessage("error", std::string("Failed to parse SendData: ") + reason);
 }
 
 void ServerApp::onResultRequested(TcpHandler &srv)
 {
-    switch(status){
+    switch(status.load()){
         case ServerStatus::Idle: {
             std::string resp(1, msgChar(MessageType::ResultNotReadyError));
             resp += "noInput";
@@ -238,9 +235,8 @@ void ServerApp::onResultRequested(TcpHandler &srv)
             srv.sendData(resp.c_str(), (int)resp.size());
             logMessage("tx", resp);
 
-            status = ServerStatus::Idle;
+            status.store(ServerStatus::Idle);
             savedInput = 0;
-            mockTimer.stop();
             break;
         }
     }
