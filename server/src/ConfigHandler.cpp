@@ -28,10 +28,10 @@ int parseIntAfter(const std::string &s, size_t pos)
 }
 }
 
-Config ConfigHandler::read(const std::string &path)
+Config ConfigHandler::read()
 {
     Config c;
-    std::ifstream f(path);
+    std::ifstream f(CONFIG_PATH);
     if(!f)
         return c;
 
@@ -53,9 +53,9 @@ Config ConfigHandler::read(const std::string &path)
     return c;
 }
 
-void ConfigHandler::write(const std::string &path, const Config &cfg, const CFDConfig &cfdCfg)
+void ConfigHandler::write(const Config &cfg, const CFDConfig &cfdCfg)
 {
-    std::ofstream f(path, std::ios::trunc);
+    std::ofstream f(CONFIG_PATH, std::ios::trunc);
     f << "{\n";
 
     auto writeField = [&](const char *name, const std::string &value, bool comma, int indent = 2){

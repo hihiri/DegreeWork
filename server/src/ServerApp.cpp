@@ -30,7 +30,7 @@ void ServerApp::logMessage(const std::string &tag, const std::string &msg) const
 }
 
 ServerApp::ServerApp()
-    : cfg(ConfigHandler::read(CONFIG_PATH)),
+    : cfg(ConfigHandler::read()),
       cfdConfig(),
       status(ServerStatus::Idle),
       savedInput(0),
@@ -87,7 +87,7 @@ void ServerApp::onConfigReceived(const std::string &msg)
             cfdConfig.width = width;
             cfdConfig.height = height;
             
-            ConfigHandler::write(CONFIG_PATH, newc, cfdConfig);
+            ConfigHandler::write(newc, cfdConfig);
             cfg = newc;
             
             std::cout << "Config overwritten: log=" << newc.log << "\n";
